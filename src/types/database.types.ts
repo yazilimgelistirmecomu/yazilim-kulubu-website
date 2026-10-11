@@ -99,6 +99,8 @@ export interface Database {
           department: string | null
           first_name: string | null
           github_url: string | null
+          hierarchy_level: 'president' | 'vice_president' | 'branch_lead' | 'member'
+          branch_id: string | null
           id: string
           instagram_url: string | null
           is_public: boolean
@@ -114,6 +116,8 @@ export interface Database {
           department?: string | null
           first_name?: string | null
           github_url?: string | null
+          hierarchy_level?: 'president' | 'vice_president' | 'branch_lead' | 'member'
+          branch_id?: string | null
           id: string
           instagram_url?: string | null
           is_public?: boolean
@@ -129,6 +133,8 @@ export interface Database {
           department?: string | null
           first_name?: string | null
           github_url?: string | null
+          hierarchy_level?: 'president' | 'vice_president' | 'branch_lead' | 'member'
+          branch_id?: string | null
           id?: string
           instagram_url?: string | null
           is_public?: boolean

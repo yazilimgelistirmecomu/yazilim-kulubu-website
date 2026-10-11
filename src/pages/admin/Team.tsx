@@ -1,9 +1,19 @@
-import { Plus, Search, Edit2, Trash2, Linkedin, Github, Instagram, UploadCloud, AlertTriangle, Loader2, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Linkedin, Github, Instagram, UploadCloud, AlertTriangle, Loader2, ChevronUp, ChevronDown, Settings2 } from "lucide-react";
 import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
 import { useState, useEffect } from "react";
 import { supabase } from "@/api/config";
 import { IMAGE_INPUT_ACCEPT, storageService } from "@/api/services/storage";
+import { branchService, HIERARCHY_LEVELS, type HierarchyLevel, type TeamBranch } from "@/api/services/team";
+
+const LEVEL_OPTIONS: Record<HierarchyLevel, string> = {
+  president: 'Başkan',
+  vice_president: 'Başkan Yardımcısı',
+  branch_lead: 'Kol Başkanı',
+  member: 'Üye',
+};
+
+const FIELD = "w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]";
 
 export function Team() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,16 +30,29 @@ export function Team() {
     last_name: '',
     position: '',
     department: '',
+    hierarchy_level: 'member' as HierarchyLevel,
+    branch_id: '',
     linkedin_url: '',
     github_url: '',
     instagram_url: '',
     is_public: true,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [branches, setBranches] = useState<TeamBranch[]>([]);
+  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
 
   useEffect(() => {
     fetchMembers();
+    fetchBranches();
   }, []);
+
+  const fetchBranches = async () => {
+    try {
+      setBranches(await branchService.list());
+    } catch (error) {
+      console.error("Kollar çekilemedi:", error);
+    }
+  };
 
   const fetchMembers = async () => {
     setIsLoading(true);
@@ -90,6 +113,8 @@ export function Team() {
       last_name: member.last_name || '',
       position: member.position || '',
       department: member.department || '',
+      hierarchy_level: (HIERARCHY_LEVELS.includes(member.hierarchy_level) ? member.hierarchy_level : 'member') as HierarchyLevel,
+      branch_id: member.branch_id || '',
       linkedin_url: member.linkedin_url || '',
       github_url: member.github_url || '',
       instagram_url: member.instagram_url || '',
@@ -106,6 +131,8 @@ export function Team() {
       last_name: '',
       position: '',
       department: '',
+      hierarchy_level: 'member',
+      branch_id: '',
       linkedin_url: '',
       github_url: '',
       instagram_url: '',
@@ -134,6 +161,8 @@ export function Team() {
         // team profile. New display-only members still default to "member".
         role: selectedMember?.role || 'member',
         department: formData.department,
+        hierarchy_level: formData.hierarchy_level,
+        branch_id: formData.branch_id || null,
         linkedin_url: formData.linkedin_url,
         github_url: formData.github_url,
         instagram_url: formData.instagram_url,
@@ -182,17 +211,23 @@ export function Team() {
     const fullName = `${member.first_name || ''} ${member.last_name || ''}`.toLowerCase();
     const position = (member.position || '').toLowerCase();
     const department = (member.department || '').toLowerCase();
+    const branch = (branches.find(b => b.id === member.branch_id)?.name || '').toLowerCase();
     const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || position.includes(query) || department.includes(query);
+    return fullName.includes(query) || position.includes(query) || department.includes(query) || branch.includes(query);
   });
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-primary flex items-center gap-2"><span className="text-[var(--brand-primary)]">&gt;_</span> Ekip Yönetimi</h1>
-        <Button variant="primary" className="flex items-center gap-2 font-mono" onClick={handleAdd}>
-          <Plus className="w-4 h-4" /> ./yeni-uye.sh
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" className="flex items-center gap-2 font-mono" onClick={() => setIsBranchModalOpen(true)}>
+            <Settings2 className="w-4 h-4" /> Kolları Yönet
+          </Button>
+          <Button variant="primary" className="flex items-center gap-2 font-mono" onClick={handleAdd}>
+            <Plus className="w-4 h-4" /> ./yeni-uye.sh
+          </Button>
+        </div>
       </div>
 
       <div className="bg-page border border-default rounded-2xl shadow-sm overflow-hidden relative">
@@ -238,6 +273,7 @@ export function Team() {
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider w-24">Sıra</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Üye Bilgisi</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Rol</th>
+                  <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Seviye / Kol</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Bölüm</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">İletişim</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Yayın</th>
@@ -277,6 +313,10 @@ export function Team() {
                       <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[var(--brand-primary)]/10 text-[var(--brand-primary)] border border-[var(--brand-primary)]/20">
                         {member.position || 'Üye'}
                       </span>
+                    </td>
+                    <td className="p-4 text-sm">
+                      <div className="font-bold text-primary">{LEVEL_OPTIONS[member.hierarchy_level as HierarchyLevel] || 'Üye'}</div>
+                      <div className="text-xs text-muted">{branches.find(b => b.id === member.branch_id)?.name || '-'}</div>
                     </td>
                     <td className="p-4 text-sm text-muted">
                       {member.department || '-'}
@@ -350,6 +390,25 @@ export function Team() {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-sm font-bold text-primary">Hiyerarşi Seviyesi</label>
+              <select value={formData.hierarchy_level} onChange={e => setFormData({...formData, hierarchy_level: e.target.value as HierarchyLevel})} className={FIELD}>
+                {HIERARCHY_LEVELS.map(level => <option key={level} value={level}>{LEVEL_OPTIONS[level]}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-bold text-primary">Kol / Ekip</label>
+              <select value={formData.branch_id} onChange={e => setFormData({...formData, branch_id: e.target.value})} className={FIELD}>
+                <option value="">Yok</option>
+                {branches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+            {formData.hierarchy_level === 'branch_lead' && !formData.branch_id && (
+              <p className="sm:col-span-2 text-xs font-medium text-[var(--color-warning)]">Kol başkanı için bir kol seçmeniz önerilir.</p>
+            )}
+          </div>
+
           <div className="space-y-1">
             <label className="text-sm font-bold text-primary">Profil Fotoğrafı</label>
             <div className="w-full border-2 border-dashed border-default rounded-xl bg-page hover:bg-surface transition-colors">
@@ -407,6 +466,14 @@ export function Team() {
         </form>
       </Modal>
 
+      <BranchManager
+        isOpen={isBranchModalOpen}
+        onClose={() => setIsBranchModalOpen(false)}
+        branches={branches}
+        memberCounts={members.reduce<Record<string, number>>((acc, m) => { if (m.branch_id) acc[m.branch_id] = (acc[m.branch_id] || 0) + 1; return acc; }, {})}
+        onChanged={async () => { await fetchBranches(); await fetchMembers(); }}
+      />
+
       <Modal
         isOpen={confirmDelete !== null}
         onClose={() => setConfirmDelete(null)}
@@ -430,5 +497,98 @@ export function Team() {
         </div>
       </Modal>
     </div>
+  );
+}
+
+function BranchManager({ isOpen, onClose, branches, memberCounts, onChanged }: {
+  isOpen: boolean;
+  onClose: () => void;
+  branches: TeamBranch[];
+  memberCounts: Record<string, number>;
+  onChanged: () => Promise<void>;
+}) {
+  const [newName, setNewName] = useState('');
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  const run = async (action: () => Promise<void>) => {
+    setBusy(true);
+    try {
+      await action();
+      await onChanged();
+    } catch (error: any) {
+      console.error("Kol işlemi başarısız:", error);
+      alert("İşlem başarısız: " + (error.message || error));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const nameOf = (b: TeamBranch) => names[b.id] ?? b.name;
+  const clearDraft = (id: string) => setNames(({ [id]: _drop, ...rest }) => rest);
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title=">_ Kolları Yönet">
+      <div className="space-y-5">
+        <p className="text-sm text-muted">Kol ve ekipler Ekibimiz sayfasında bölüm başlığı olarak görünür. Sıra buradaki sıradır.</p>
+
+        <ul className="space-y-2">
+          {branches.map((b, i) => (
+            <li key={b.id} className="p-3 bg-surface border border-default rounded-xl space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={nameOf(b)}
+                  maxLength={80}
+                  onChange={e => setNames({ ...names, [b.id]: e.target.value })}
+                  onBlur={() => {
+                    const value = nameOf(b).trim();
+                    clearDraft(b.id);
+                    if (value && value !== b.name) run(() => branchService.rename(b.id, value));
+                  }}
+                  className={FIELD}
+                  aria-label="Kol adı"
+                />
+                <button disabled={busy || i === 0} onClick={() => run(() => branchService.swapOrder(b, branches[i - 1]))} className="p-2 text-muted hover:text-[var(--brand-primary)] bg-page border border-default rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Yukarı taşı">
+                  <ChevronUp className="w-4 h-4 pointer-events-none" />
+                </button>
+                <button disabled={busy || i === branches.length - 1} onClick={() => run(() => branchService.swapOrder(b, branches[i + 1]))} className="p-2 text-muted hover:text-[var(--brand-primary)] bg-page border border-default rounded-lg cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" aria-label="Aşağı taşı">
+                  <ChevronDown className="w-4 h-4 pointer-events-none" />
+                </button>
+                <button disabled={busy} onClick={() => setConfirmId(b.id)} className="p-2 text-muted hover:text-[var(--color-danger)] bg-page border border-default rounded-lg cursor-pointer disabled:opacity-30" aria-label="Sil">
+                  <Trash2 className="w-4 h-4 pointer-events-none" />
+                </button>
+              </div>
+              {confirmId === b.id && (
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <span className="text-muted">
+                    {memberCounts[b.id] ? `${memberCounts[b.id]} üye kolsuz kalacak. ` : ''}Silinsin mi?
+                  </span>
+                  <span className="flex gap-2">
+                    <Button variant="ghost" onClick={() => setConfirmId(null)}>Vazgeç</Button>
+                    <Button variant="primary" className="bg-[var(--color-danger-solid)] hover:bg-[var(--color-danger-hover)] text-white" onClick={() => { setConfirmId(null); run(() => branchService.remove(b.id)); }}>Sil</Button>
+                  </span>
+                </div>
+              )}
+            </li>
+          ))}
+          {branches.length === 0 && <li className="text-sm text-muted">Henüz kol yok.</li>}
+        </ul>
+
+        <form
+          className="flex gap-2 pt-4 border-t border-default"
+          onSubmit={e => {
+            e.preventDefault();
+            const value = newName.trim();
+            if (!value) return;
+            run(async () => { await branchService.create(value, branches); setNewName(''); });
+          }}
+        >
+          <input type="text" value={newName} maxLength={80} onChange={e => setNewName(e.target.value)} placeholder="Yeni kol / ekip adı (örn: Yapay Zeka Kolu)" className={FIELD} />
+          <Button variant="primary" type="submit" disabled={busy || !newName.trim()}>Ekle</Button>
+        </form>
+      </div>
+    </Modal>
   );
 }

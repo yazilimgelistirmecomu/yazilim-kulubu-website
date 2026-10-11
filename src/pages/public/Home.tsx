@@ -11,6 +11,8 @@ import { eventService } from '@/api/services/events';
 import { ProjectCardLink } from '@/components/shared/ProjectCardLink';
 import { teamService, type PublicTeamMember } from '@/api/services/team';
 import { TeamMemberCard } from '@/components/shared/TeamMemberCard';
+import { PersonModal } from '@/components/shared/PersonModal';
+import { previewMembers, memberToPerson } from '@/utils/teamHierarchy';
 import { Reveal } from '@/components/shared/Reveal';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { getSocialPlatforms } from '@/utils/socialPlatforms';
@@ -78,13 +80,14 @@ export function Home() {
 
   const TEAM_PREVIEW_COUNT = 4;
   const [teamPreview, setTeamPreview] = useState<PublicTeamMember[]>([]);
+  const [selectedMember, setSelectedMember] = useState<PublicTeamMember | null>(null);
   const siteSettings = useSiteSettings();
   const platforms = getSocialPlatforms(siteSettings);
 
   useEffect(() => {
     let cancelled = false;
     teamService.getPublicMembers()
-      .then(data => { if (!cancelled) setTeamPreview(data.slice(0, TEAM_PREVIEW_COUNT)); })
+      .then(data => { if (!cancelled) setTeamPreview(previewMembers(data, TEAM_PREVIEW_COUNT)); })
       .catch(err => console.error('Ana sayfa ekibi çekilemedi:', err));
     return () => { cancelled = true; };
   }, []);
@@ -442,10 +445,11 @@ export function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 justify-items-center">
             {teamPreview.map((member, idx) => (
-              <TeamMemberCard key={member.public_id} member={member} delay={idx * 0.1} />
+              <TeamMemberCard key={member.public_id} member={member} onSelect={setSelectedMember} delay={idx * 0.1} />
             ))}
           </div>
         </div>
+        <PersonModal person={selectedMember && memberToPerson(selectedMember)} onClose={() => setSelectedMember(null)} />
       </section>
       )}
 
