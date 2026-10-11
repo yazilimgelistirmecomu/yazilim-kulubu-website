@@ -28,7 +28,7 @@ export function Button({
     primary: 'bg-[var(--brand-primary)] text-[var(--brand-text)] hover:bg-[var(--brand-hover)] hover:shadow-lg hover:shadow-[var(--brand-primary)]/20',
     secondary: 'bg-transparent border border-[var(--brand-primary)] text-[var(--brand-primary)] hover:bg-[var(--brand-primary)]/10 hover:border-[var(--brand-hover)]',
     ghost: 'bg-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]',
-    destructive: 'bg-[#D4183D] text-white hover:bg-[#B01435]'
+    destructive: 'bg-[var(--color-danger)] text-white hover:bg-[var(--color-danger-hover)]'
   };
 
   const sizeClasses = {

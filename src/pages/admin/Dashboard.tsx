@@ -111,9 +111,9 @@ export function Dashboard() {
       <div className="bg-page border border-default rounded-md shadow-sm p-6 relative overflow-hidden">
         {/* Terminal Header Bar */}
         <div className="absolute top-0 left-0 w-full h-6 bg-surface border-b border-default flex items-center px-4 gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-danger-solid)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-warning)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-success)]"></div>
           <span className="text-[10px] text-muted ml-4 font-mono">root@ygk-server:~# htop</span>
         </div>
 
@@ -150,17 +150,17 @@ export function Dashboard() {
       {/* Quick Links & Info Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Pending Submissions Card */}
-        <div className="bg-page border border-amber-500/30 rounded-md shadow-sm p-6 flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-amber-500 opacity-20"></div>
+        <div className="bg-page border border-[var(--color-warning)]/30 rounded-md shadow-sm p-6 flex flex-col relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-[var(--color-warning)] opacity-20"></div>
 
           <Link
             to="/admin/basvurular"
             className="flex items-center justify-between mb-4 group"
           >
-            <h3 className="text-amber-500 text-lg flex items-center gap-2">
+            <h3 className="text-[var(--color-warning)] text-lg flex items-center gap-2">
               <span className="opacity-50">&gt;</span> Bekleyen Başvurular
             </h3>
-            <ArrowRight className="w-4 h-4 text-muted group-hover:text-amber-500 transition-colors" />
+            <ArrowRight className="w-4 h-4 text-muted group-hover:text-[var(--color-warning)] transition-colors" />
           </Link>
 
           <div className="space-y-3 font-mono text-[11px] flex-1">
@@ -173,7 +173,7 @@ export function Dashboard() {
 
                 return (
                   <div key={item.id} className="flex items-center justify-between border-b border-default last:border-0 pb-2 last:pb-0">
-                    <span className="text-amber-600 dark:text-amber-400 truncate pr-4">
+                    <span className="text-[var(--color-warning)] truncate pr-4">
                       {actionText} — {item.full_name}
                     </span>
                     <span className="text-muted flex-shrink-0">
@@ -189,7 +189,7 @@ export function Dashboard() {
 
           <p className="text-[10px] text-muted mt-4 border-t border-default pt-2 flex items-center justify-between">
             <span>{pendingApps} yeni başvuru</span>
-            <span className="font-mono bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded text-[9px]">./incelenmeyi_bekliyor.sh</span>
+            <span className="font-mono bg-[var(--color-warning)]/10 text-[var(--color-warning)] px-1.5 py-0.5 rounded text-[9px]">./incelenmeyi_bekliyor.sh</span>
           </p>
         </div>
 
@@ -218,13 +218,13 @@ export function Dashboard() {
 
         {/* Daily Visitors Card (Cyan theme) */}
         <div className="bg-page border border-default rounded-md shadow-sm p-6 relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 left-0 w-full h-1 bg-cyan-500 opacity-20"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-[var(--accent-fg)] opacity-20"></div>
 
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-primary text-lg flex items-center gap-2">
-              <span className="text-cyan-500 opacity-50">&gt;</span> Günlük Ziyaretçi
+              <span className="text-[var(--accent-fg)] opacity-50">&gt;</span> Günlük Ziyaretçi
             </h3>
-            <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-500">
+            <div className="w-8 h-8 rounded-full bg-[var(--accent-fg)]/10 flex items-center justify-center text-[var(--accent-fg)]">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -232,14 +232,14 @@ export function Dashboard() {
           <div className="flex-1 flex flex-col justify-center py-4">
             <div className="text-4xl font-extrabold text-primary tracking-tight flex items-baseline gap-1.5 font-mono">
               {todayViews}
-              <span className="w-3 h-6 bg-cyan-500 animate-pulse inline-block opacity-70"></span>
+              <span className="w-3 h-6 bg-[var(--accent-fg)] animate-pulse inline-block opacity-70"></span>
             </div>
             <p className="text-xs text-muted mt-2">Bugünkü canlı tekil sayfa görüntülemeleri.</p>
           </div>
 
           <div className="border-t border-default pt-3 mt-auto flex items-center justify-between text-[11px] text-muted">
-            <span>Durum: <span className="text-green-500 font-bold">Aktif / Canlı</span></span>
-            <span className="bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded font-mono text-[9px]">live_stream</span>
+            <span>Durum: <span className="text-[var(--color-success)] font-bold">Aktif / Canlı</span></span>
+            <span className="bg-[var(--color-success)]/10 text-[var(--color-success)] px-1.5 py-0.5 rounded font-mono text-[9px]">live_stream</span>
           </div>
         </div>
       </div>

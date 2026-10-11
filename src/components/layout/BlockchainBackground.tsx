@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { resolveRgb } from '@/utils/themeColor';
 
-export function BlockchainBackground({ colorHex = '#7F77DD' }: { colorHex?: string }) {
+export function BlockchainBackground({ colorHex = 'var(--brand-primary)' }: { colorHex?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
 
@@ -21,10 +22,7 @@ export function BlockchainBackground({ colorHex = '#7F77DD' }: { colorHex?: stri
     window.addEventListener('resize', resizeCanvas);
 
     // Parse color
-    const r = parseInt(colorHex.slice(1, 3), 16) || 127;
-    const g = parseInt(colorHex.slice(3, 5), 16) || 119;
-    const b = parseInt(colorHex.slice(5, 7), 16) || 221;
-    const colorRGB = `${r}, ${g}, ${b}`;
+    const colorRGB = resolveRgb(colorHex);
 
     // Particles array
     const particlesArray: Particle[] = [];

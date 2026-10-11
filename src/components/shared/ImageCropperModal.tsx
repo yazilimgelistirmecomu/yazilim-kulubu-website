@@ -113,7 +113,7 @@ export function ImageCropperModal({
               onClick={() => setCurrentAspect(16 / 9)}
               className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                 currentAspect === 16 / 9
-                  ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
+                  ? 'bg-[var(--brand-primary)] text-[var(--brand-text)] border-[var(--brand-primary)]'
                   : 'bg-page text-muted border-default hover:text-primary'
               }`}
             >
@@ -124,7 +124,7 @@ export function ImageCropperModal({
               onClick={() => setCurrentAspect(4 / 3)}
               className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                 currentAspect === 4 / 3
-                  ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
+                  ? 'bg-[var(--brand-primary)] text-[var(--brand-text)] border-[var(--brand-primary)]'
                   : 'bg-page text-muted border-default hover:text-primary'
               }`}
             >
@@ -135,7 +135,7 @@ export function ImageCropperModal({
               onClick={() => setCurrentAspect(1 / 1)}
               className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                 currentAspect === 1 / 1
-                  ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
+                  ? 'bg-[var(--brand-primary)] text-[var(--brand-text)] border-[var(--brand-primary)]'
                   : 'bg-page text-muted border-default hover:text-primary'
               }`}
             >
@@ -146,7 +146,7 @@ export function ImageCropperModal({
               onClick={() => setCurrentAspect(undefined)}
               className={`px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                 currentAspect === undefined
-                  ? 'bg-[var(--brand-primary)] text-white border-[var(--brand-primary)]'
+                  ? 'bg-[var(--brand-primary)] text-[var(--brand-text)] border-[var(--brand-primary)]'
                   : 'bg-page text-muted border-default hover:text-primary'
               }`}
             >

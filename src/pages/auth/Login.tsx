@@ -40,7 +40,7 @@ export function Login() {
     <div className="min-h-screen bg-page flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--brand-primary)] rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500 rounded-full blur-[120px] opacity-10 pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[var(--accent-fg)] rounded-full blur-[120px] opacity-10 pointer-events-none"></div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -64,10 +64,10 @@ export function Login() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3"
+              className="mb-6 p-4 bg-[var(--color-danger)]/10 border border-[var(--color-danger)]/20 rounded-xl flex items-start gap-3"
             >
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-red-500">{error}</p>
+              <AlertCircle className="w-5 h-5 text-[var(--color-danger)] shrink-0 mt-0.5" />
+              <p className="text-sm font-medium text-[var(--color-danger)]">{error}</p>
             </motion.div>
           )}
 

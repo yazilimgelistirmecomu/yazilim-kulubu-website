@@ -7,7 +7,7 @@ import { CheckCircle, Send } from 'lucide-react';
 import { supabase } from '@/api/config';
 import { withTimeout } from '@/utils/promise';
 import { DatabaseError } from '@/components/shared/DatabaseError';
-import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
+import { ProjectCardLink } from '@/components/shared/ProjectCardLink';
 
 export function Projects() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,13 +40,13 @@ export function Projects() {
     setError(null);
     try {
       const { data, error: dbError } = await withTimeout<any>(
-        supabase.from('projects').select('*').order('created_at', { ascending: false }),
+        supabase.from('projects').select('id,title,description,summary,slug,github_url,demo_url,image_url,tech_stack,is_club_project,is_featured_club_project,created_at').order('created_at', { ascending: false }),
         5000
       );
       if (dbError) throw dbError;
 
       if (data) {
-        const featured = data.find(p => p.is_club_project && p.image_url);
+        const featured = data.find(p => p.is_featured_club_project);
         const club = data.filter(p => p.is_club_project && p.id !== featured?.id);
         const member = data.filter(p => !p.is_club_project);
 
@@ -137,8 +137,9 @@ ${formData.description}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center"
+              className="relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center"
             >
+              <ProjectCardLink slug={featuredProject.slug} title={featuredProject.title} />
               {/* Left - Details */}
               <div className="col-span-1 lg:col-span-6 order-2 lg:order-1">
                 <div className="mb-6 flex items-center gap-3">
@@ -152,7 +153,7 @@ ${formData.description}
                 </div>
                 <h2 className="text-3xl sm:text-5xl md:text-6xl font-black mb-4 sm:mb-6 tracking-tight">{featuredProject.title}</h2>
                 <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6 sm:mb-8">
-                  {featuredProject.description}
+                  {featuredProject.summary || featuredProject.description}
                 </p>
 
                 {featuredProject.tech_stack && featuredProject.tech_stack.length > 0 && (
@@ -165,7 +166,7 @@ ${formData.description}
                   </div>
                 )}
 
-                <div className="flex flex-row items-center gap-3 w-full">
+                <div className="relative z-20 flex flex-row items-center gap-3 w-full">
                   {featuredProject.demo_url && (
                     <Button 
                       href={featuredProject.demo_url} 
@@ -232,8 +233,9 @@ ${formData.description}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.7, ease: "easeOut" }}
-                  className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-8 lg:gap-16 items-center mb-24 lg:mb-32 last:mb-0`}
+                  className={`relative flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-8 lg:gap-16 items-center mb-24 lg:mb-32 last:mb-0`}
                 >
+                  <ProjectCardLink slug={project.slug} title={project.title} />
                   {/* Image Side */}
                   <div className="w-full lg:w-1/2 relative group">
                     <div className="relative aspect-video rounded-3xl overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)]">
@@ -260,7 +262,7 @@ ${formData.description}
                   <div className="w-full lg:w-1/2 flex flex-col justify-center">
                     <div className="flex items-center gap-3 mb-6">
                       {project.branch && (
-                        <span className="px-3 py-1 bg-[var(--brand-primary)] text-white text-xs font-black rounded-full uppercase tracking-widest shadow-[0_0_15px_var(--brand-primary)]">
+                        <span className="px-3 py-1 bg-[var(--brand-primary)] text-[var(--brand-text)] text-xs font-black rounded-full uppercase tracking-widest shadow-[0_0_15px_var(--brand-primary)]">
                           {project.branch}
                         </span>
                       )}
@@ -271,8 +273,8 @@ ${formData.description}
                     </div>
 
                     <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 tracking-tight leading-tight">{project.title}</h3>
-                    <p className="text-sm sm:text-base text-muted mb-6 leading-relaxed font-medium">
-                      {project.description}
+                    <p className="text-sm sm:text-base text-muted mb-6 leading-relaxed font-medium line-clamp-3">
+                      {project.summary || project.description}
                     </p>
 
                     <div className="flex flex-wrap gap-2 mb-8">
@@ -281,7 +283,7 @@ ${formData.description}
                       ))}
                     </div>
 
-                    <div className="flex flex-row items-center gap-3 w-full">
+                    <div className="relative z-20 flex flex-row items-center gap-3 w-full">
                       {project.demo_url && (
                         <Button 
                           href={project.demo_url} 
@@ -289,9 +291,9 @@ ${formData.description}
                           rel="noopener noreferrer" 
                           variant="primary" 
                           size="lg" 
-                          className={`${project.github_url ? 'w-1/2' : 'w-full'} sm:w-auto flex items-center justify-center text-xs xs:text-sm sm:text-base px-2.5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl shadow-[0_0_20px_rgba(var(--brand-primary-rgb),0.3)] font-bold whitespace-nowrap`}
+                          className={`${project.github_url ? 'w-1/2' : 'w-full'} sm:w-auto flex items-center justify-center text-xs xs:text-sm sm:text-base px-2.5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl shadow-[0_0_20px_var(--brand-glow)] font-bold whitespace-nowrap`}
                         >
-                          <span className="whitespace-nowrap">Projeyi İncele</span> <ExternalLink className="w-3.5 h-3.5 sm:w-5 h-5 ml-1 sm:ml-2 shrink-0" />
+                          <span className="whitespace-nowrap">Canlı Demo</span> <ExternalLink className="w-3.5 h-3.5 sm:w-5 h-5 ml-1 sm:ml-2 shrink-0" />
                         </Button>
                       )}
                       {project.github_url && (
@@ -303,7 +305,7 @@ ${formData.description}
                           size="lg" 
                           className={`${project.demo_url ? 'w-1/2' : 'w-full'} sm:w-auto flex items-center justify-center text-xs xs:text-sm sm:text-base px-2.5 sm:px-6 py-2.5 sm:py-3.5 rounded-xl bg-surface hover:bg-elevated border-default font-bold shadow-sm whitespace-nowrap`}
                         >
-                          <span className="whitespace-nowrap">Kaynak Kod</span> <Github className="w-3.5 h-3.5 sm:w-5 h-5 ml-1 sm:ml-2 shrink-0" />
+                          <span className="whitespace-nowrap">GitHub</span> <Github className="w-3.5 h-3.5 sm:w-5 h-5 ml-1 sm:ml-2 shrink-0" />
                         </Button>
                       )}
                     </div>
@@ -344,8 +346,9 @@ ${formData.description}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ delay: idx * 0.1, duration: 0.5 }}
-                className="group flex flex-col"
+                className="group relative flex flex-col"
               >
+                <ProjectCardLink slug={project.slug} title={project.title} />
                 {/* Visual Preview */}
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden mb-6 shadow-md bg-surface">
                   {project.image_url ? (
@@ -371,7 +374,7 @@ ${formData.description}
                       </a>
                     )}
                     {project.demo_url && (
-                      <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-[var(--brand-primary)] text-white hover:opacity-90 flex items-center justify-center shadow-2xl shadow-[var(--brand-primary)] transition-all" title="Demo">
+                      <a href={project.demo_url} target="_blank" rel="noopener noreferrer" className="w-12 h-12 rounded-full bg-[var(--brand-primary)] text-[var(--brand-text)] hover:opacity-90 flex items-center justify-center shadow-2xl shadow-[var(--brand-primary)] transition-all" title="Demo">
                         <ExternalLink className="w-5 h-5" />
                       </a>
                     )}
@@ -386,7 +389,7 @@ ${formData.description}
                   </div>
 
                   <h3 className="text-2xl font-bold mb-3 text-primary group-hover:text-[var(--brand-primary)] transition-colors line-clamp-1">{project.title}</h3>
-                  <p className="text-sm font-medium text-muted mb-5 line-clamp-2 leading-relaxed">{project.description}</p>
+                  <p className="text-sm font-medium text-muted mb-5 line-clamp-2 leading-relaxed">{project.summary || project.description}</p>
 
                   <div className="mt-auto">
                     <div className="flex flex-wrap gap-2 mb-4">
@@ -423,7 +426,7 @@ ${formData.description}
             animate={{ opacity: 1, scale: 1 }}
             className="flex flex-col items-center justify-center py-12 text-center"
           >
-            <div className="w-20 h-20 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full flex items-center justify-center mb-6">
+            <div className="w-20 h-20 bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/20 rounded-full flex items-center justify-center mb-6">
               <CheckCircle className="w-10 h-10" />
             </div>
             <h3 className="text-2xl font-bold text-primary mb-3">Tebrikler, Projen Gönderildi!</h3>

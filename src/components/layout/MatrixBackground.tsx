@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { resolveRgb } from '@/utils/themeColor';
 
-export function MatrixBackground({ colorHex = '#534AB7' }: { colorHex?: string }) {
+export function MatrixBackground({ colorHex = 'var(--brand-primary)' }: { colorHex?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
 
@@ -33,17 +34,15 @@ export function MatrixBackground({ colorHex = '#534AB7' }: { colorHex?: string }
       const isDark = document.documentElement.classList.contains('dark');
 
       // Semi-transparent background to create trail effect (increased fade for less noise)
-      ctx.fillStyle = isDark ? 'rgba(10, 10, 10, 0.1)' : 'rgba(250, 250, 250, 0.1)';
+      ctx.fillStyle = isDark ? 'rgba(11, 18, 48, 0.1)' : 'rgba(243, 244, 246, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Parse hex color to rgb
-      const r = parseInt(colorHex.slice(1, 3), 16) || 83;
-      const g = parseInt(colorHex.slice(3, 5), 16) || 74;
-      const b = parseInt(colorHex.slice(5, 7), 16) || 183;
+      const rgb = resolveRgb(colorHex);
 
       // Set text color and font
       // In light mode, make text almost solid so it stands out against white background
-      ctx.fillStyle = isDark ? `rgba(${r}, ${g}, ${b}, 0.55)` : `rgba(${r}, ${g}, ${b}, 0.95)`;
+      ctx.fillStyle = isDark ? `rgba(${rgb}, 0.55)` : `rgba(${rgb}, 0.95)`;
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {

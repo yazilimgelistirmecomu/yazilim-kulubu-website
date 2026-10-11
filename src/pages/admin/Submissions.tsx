@@ -78,10 +78,10 @@ export function Submissions() {
 
   const statusLabel = (status: string) => {
     switch (status) {
-      case "pending": return { text: "Beklemede", cls: "bg-amber-500/10 text-amber-500 border-amber-500/20" };
-      case "approved": return { text: "Onaylandı", cls: "bg-green-500/10 text-green-500 border-green-500/20" };
-      case "rejected": return { text: "Reddedildi", cls: "bg-red-500/10 text-red-500 border-red-500/20" };
-      default: return { text: status, cls: "bg-gray-500/10 text-gray-500 border-gray-500/20" };
+      case "pending": return { text: "Beklemede", cls: "bg-[var(--color-warning)]/10 text-[var(--color-warning)] border-[var(--color-warning)]/20" };
+      case "approved": return { text: "Onaylandı", cls: "bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20" };
+      case "rejected": return { text: "Reddedildi", cls: "bg-[var(--color-danger)]/10 text-[var(--color-danger)] border-[var(--color-danger)]/20" };
+      default: return { text: status, cls: "bg-[var(--text-subtle)]/10 text-[var(--text-subtle)] border-[var(--text-subtle)]/20" };
     }
   };
 
@@ -104,7 +104,7 @@ export function Submissions() {
           <p className="text-sm text-muted mt-1">Kulüp üyelik ve iletişim başvurularını buradan yönetin.</p>
         </div>
         {pendingCount > 0 && (
-          <span className="px-3 py-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-sm font-bold">
+          <span className="px-3 py-1.5 bg-[var(--color-warning)]/10 text-[var(--color-warning)] border border-[var(--color-warning)]/20 rounded-full text-sm font-bold">
             {pendingCount} bekliyor
           </span>
         )}
@@ -112,9 +112,9 @@ export function Submissions() {
 
       <div className="bg-page border border-default rounded-2xl shadow-sm overflow-hidden">
         <div className="w-full h-8 bg-surface border-b border-default flex items-center px-4 gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-danger-solid)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-warning)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-success)]"></div>
           <span className="text-[10px] text-muted ml-4 font-mono">root@ygk-server:~/admin/submissions</span>
         </div>
 
@@ -234,7 +234,7 @@ export function Submissions() {
                   variant="ghost"
                   type="button"
                   onClick={() => setConfirmAction({ id: selectedApp.id, action: "rejected" })}
-                  className="text-red-500 hover:bg-red-500/10"
+                  className="text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10"
                 >
                   <XCircle className="w-4 h-4 mr-2" /> Reddet
                 </Button>
@@ -260,8 +260,8 @@ export function Submissions() {
           <div className="flex items-start gap-4">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
               confirmAction?.action === "approved"
-                ? "bg-green-500/10 text-green-500"
-                : "bg-red-500/10 text-red-500"
+                ? "bg-[var(--color-success)]/10 text-[var(--color-success)]"
+                : "bg-[var(--color-danger)]/10 text-[var(--color-danger)]"
             }`}>
               {confirmAction?.action === "approved"
                 ? <CheckCircle className="w-6 h-6" />
@@ -291,7 +291,7 @@ export function Submissions() {
               variant={confirmAction?.action === "approved" ? "primary" : "primary"}
               type="button"
               onClick={handleConfirmAction}
-              className={confirmAction?.action === "rejected" ? "!bg-red-500 hover:!bg-red-600 !border-red-500" : ""}
+              className={confirmAction?.action === "rejected" ? "!bg-[var(--color-danger-solid)] hover:!bg-[var(--color-danger-hover)] !border-[var(--color-danger)]" : ""}
             >
               {confirmAction?.action === "approved" ? "Evet, Onayla" : "Evet, Reddet"}
             </Button>

@@ -29,6 +29,7 @@ export function AdminLayout() {
     { name: "Projeler", path: "/admin/projeler", icon: Briefcase },
     { name: "Başvurular", path: "/admin/basvurular", icon: Inbox },
     { name: "Ekip Yönetimi", path: "/admin/ekip", icon: Users },
+    { name: "Geliştiriciler", path: "/admin/gelistiriciler", icon: Code2 },
     { name: "Ayarlar", path: "/admin/ayarlar", icon: Settings },
   ];
 
@@ -92,7 +93,7 @@ export function AdminLayout() {
         <div className="p-4 border-t border-default flex flex-col gap-2">
           <Link
             to="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-md font-medium text-muted hover:bg-page hover:text-red-500 transition-all text-sm"
+            className="flex items-center gap-3 px-4 py-3 rounded-md font-medium text-muted hover:bg-page hover:text-[var(--color-danger)] transition-all text-sm"
           >
             <LogOut className="w-4 h-4" />
             <span className="opacity-90 font-mono">exit()</span>

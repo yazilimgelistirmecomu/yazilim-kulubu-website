@@ -29,6 +29,40 @@ export const projectService = {
     return data;
   },
 
+  // Ana sayfada gösterilecek projeler (admin'in seçtiği, sıralı)
+  async getHomepageProjects(limit = 3) {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('status', 'approved')
+      .eq('show_on_homepage', true)
+      .order('homepage_order', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Slug ile tek onaylı proje (public detay sayfası)
+  async getProjectBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('slug', slug)
+      .eq('status', 'approved')
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Öne çıkan kulüp projesini değiştir (null = işareti kaldır)
+  async setFeaturedClubProject(id: string | null) {
+    const { error } = await supabase.rpc('set_featured_club_project', { p_id: id });
+    if (error) throw error;
+  },
+
   // Yeni proje ekle
   async createProject(project: ProjectInsert) {
     const { data, error } = await supabase

@@ -1,4 +1,5 @@
-import { Plus, Search, Edit2, Trash2, Calendar as CalendarIcon, MapPin, UploadCloud, AlertTriangle, Loader2, Link as LinkIcon, Users } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Calendar as CalendarIcon, MapPin, UploadCloud, AlertTriangle, Loader2, Link as LinkIcon, Users, Star } from "lucide-react";
+import { SLUG_PATTERN, slugify } from "@/utils/slug";
 import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
 import { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ export function Events() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [featuredBusyId, setFeaturedBusyId] = useState<string | null>(null);
 
   // Cropper State
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -70,6 +72,7 @@ export function Events() {
   // Form State
   const [formData, setFormData] = useState({
     title: '',
+    slug: '',
     date: '',
     time: '',
     location: '',
@@ -78,6 +81,7 @@ export function Events() {
     capacity: '',
     registration_url: ''
   });
+  const [slugTouched, setSlugTouched] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
@@ -95,6 +99,20 @@ export function Events() {
       console.error("Etkinlikler çekilemedi:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Ana sayfada öne çıkan etkinlik: tek RPC ile atomik; eski işaret otomatik kalkar
+  const handleToggleFeatured = async (event: any) => {
+    setFeaturedBusyId(event.id);
+    try {
+      await eventService.setFeaturedEvent(event.is_homepage_featured ? null : event.id);
+      await fetchEvents();
+    } catch (error: any) {
+      console.error("Öne çıkan etkinlik değiştirilemedi:", error);
+      alert("Öne çıkan etkinlik değiştirilemedi: " + error.message);
+    } finally {
+      setFeaturedBusyId(null);
     }
   };
 
@@ -124,6 +142,7 @@ export function Events() {
 
     setFormData({
       title: event.title,
+      slug: event.slug || '',
       date: dateStr,
       time: timeStr,
       location: event.location || '',
@@ -132,6 +151,7 @@ export function Events() {
       capacity: event.capacity ? event.capacity.toString() : '',
       registration_url: event.registration_url || ''
     });
+    setSlugTouched(false);
     setImageFile(null);
     setGalleryFiles([]);
     setExistingGalleryUrls(event.gallery_urls || []);
@@ -142,6 +162,7 @@ export function Events() {
     setSelectedEvent(null);
     setFormData({
       title: '',
+      slug: '',
       date: '',
       time: '',
       location: '',
@@ -150,6 +171,7 @@ export function Events() {
       capacity: '',
       registration_url: ''
     });
+    setSlugTouched(false);
     setImageFile(null);
     setGalleryFiles([]);
     setExistingGalleryUrls([]);
@@ -159,6 +181,12 @@ export function Events() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    const slug = formData.slug.trim() || slugify(formData.title);
+    if (!slug || !SLUG_PATTERN.test(slug)) {
+      alert("Slug yalnızca küçük harf, rakam ve tire içerebilir (örn: yapay-zeka-zirvesi).");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -187,6 +215,7 @@ export function Events() {
 
       const eventPayload = {
         title: formData.title,
+        slug,
         date: combinedDate,
         location: formData.location,
         description: formData.description,
@@ -208,7 +237,7 @@ export function Events() {
       setIsModalOpen(false);
     } catch (error: any) {
       console.error("Kaydedilirken hata oluştu:", error);
-      alert("Bir hata oluştu: " + error.message);
+      alert(error?.code === '23505' ? "Bu slug başka bir etkinlikte kullanılıyor. Lütfen farklı bir slug girin." : "Bir hata oluştu: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -224,9 +253,9 @@ export function Events() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'featured': return 'bg-purple-500/10 text-purple-500 border border-purple-500/20';
-      case 'past': return 'bg-gray-500/10 text-gray-500 border border-gray-500/20';
-      default: return 'bg-blue-500/10 text-blue-500 border border-blue-500/20';
+      case 'featured': return 'bg-[var(--accent-fg)]/10 text-[var(--accent-fg)] border border-[var(--accent-fg)]/20';
+      case 'past': return 'bg-[var(--text-subtle)]/10 text-[var(--text-subtle)] border border-[var(--text-subtle)]/20';
+      default: return 'bg-[var(--accent-fg)]/10 text-[var(--accent-fg)] border border-[var(--accent-fg)]/20';
     }
   };
 
@@ -247,9 +276,9 @@ export function Events() {
 
       <div className="bg-page border border-default rounded-2xl shadow-sm overflow-hidden relative">
         <div className="w-full h-8 bg-surface border-b border-default flex items-center px-4 gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-danger-solid)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-warning)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-success)]"></div>
           <span className="text-[10px] text-muted ml-4 font-mono">root@ygk-server:~/admin/events</span>
         </div>
 
@@ -315,6 +344,11 @@ export function Events() {
                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${getTypeColor(event.type)}`}>
                           {getTypeLabel(event.type)}
                         </span>
+                        {event.is_homepage_featured && (
+                          <span className="ml-2 px-2.5 py-1 rounded-full text-xs font-bold bg-[var(--color-warning)]/10 text-[var(--color-warning)] border border-[var(--color-warning)]/20">
+                            {new Date(event.date).getTime() > Date.now() ? 'Ana sayfada' : 'Ana sayfada (tarihi geçti, gizli)'}
+                          </span>
+                        )}
                       </td>
                       <td className="p-4 text-sm text-muted">
                         <div className="flex items-center gap-2">
@@ -327,10 +361,18 @@ export function Events() {
                         </div>
                       </td>
                       <td className="p-4 flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleToggleFeatured(event)}
+                          disabled={featuredBusyId !== null}
+                          className={`p-2 bg-surface hover:bg-page border border-default rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${event.is_homepage_featured ? 'text-[var(--color-warning)]' : 'text-muted hover:text-[var(--color-warning)]'}`}
+                          title={event.is_homepage_featured ? 'Ana sayfadan kaldır' : 'Ana sayfada öne çıkar'}
+                        >
+                          <Star className={`w-4 h-4 pointer-events-none ${event.is_homepage_featured ? 'fill-current' : ''}`} />
+                        </button>
                         <button onClick={() => handleEdit(event)} className="p-2 text-muted hover:text-[var(--brand-primary)] bg-surface hover:bg-page border border-default rounded-lg transition-colors cursor-pointer" title="Düzenle">
                           <Edit2 className="w-4 h-4 pointer-events-none" />
                         </button>
-                        <button onClick={() => handleDelete(event.id)} className="p-2 text-muted hover:text-red-500 bg-surface hover:bg-red-500/10 border border-default hover:border-red-500/20 rounded-lg transition-colors cursor-pointer" title="Sil">
+                        <button onClick={() => handleDelete(event.id)} className="p-2 text-muted hover:text-[var(--color-danger)] bg-surface hover:bg-[var(--color-danger)]/10 border border-default hover:border-[var(--color-danger)]/20 rounded-lg transition-colors cursor-pointer" title="Sil">
                           <Trash2 className="w-4 h-4 pointer-events-none" />
                         </button>
                       </td>
@@ -376,7 +418,13 @@ export function Events() {
 
           <div className="space-y-1">
             <label className="text-sm font-bold text-primary">Etkinlik Adı</label>
-            <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="Örn: Yapay Zeka Zirvesi" className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]" required />
+            <input type="text" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value, slug: slugTouched ? formData.slug : slugify(e.target.value) })} placeholder="Örn: Yapay Zeka Zirvesi" className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]" required />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-primary">Slug (Adres)</label>
+            <input type="text" value={formData.slug} onChange={e => { setSlugTouched(true); setFormData({ ...formData, slug: e.target.value.toLowerCase() }); }} placeholder="yapay-zeka-zirvesi" className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm font-mono focus:outline-none focus:border-[var(--brand-primary)]" />
+            <p className="text-xs text-muted">/etkinlikler/{formData.slug || '...'} — Slug değişirse eski linkler çalışmaz.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -420,7 +468,7 @@ export function Events() {
                     setImageFile(null);
                     if (selectedEvent) selectedEvent.image_url = null;
                   }}
-                  className="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 p-2 bg-[var(--color-danger-solid)] hover:bg-[var(--color-danger-hover)] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Görseli Kaldır"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -455,7 +503,7 @@ export function Events() {
                       <div key={'ext-' + i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
                         <SmartImage src={url} alt="Galeri" className="w-full h-full object-cover" />
                         <button type="button" onClick={() => setExistingGalleryUrls(existingGalleryUrls.filter((_, idx) => idx !== i))} className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 className="w-4 h-4 text-red-400" />
+                          <Trash2 className="w-4 h-4 text-[var(--color-danger)]" />
                         </button>
                       </div>
                     ))}
@@ -463,7 +511,7 @@ export function Events() {
                       <div key={'new-' + i} className="relative w-16 h-16 rounded-lg overflow-hidden group">
                         <SmartImage src={URL.createObjectURL(f)} alt="Yeni" className="w-full h-full object-cover" />
                         <button type="button" onClick={() => setGalleryFiles(galleryFiles.filter((_, idx) => idx !== i))} className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 className="w-4 h-4 text-red-400" />
+                          <Trash2 className="w-4 h-4 text-[var(--color-danger)]" />
                         </button>
                       </div>
                     ))}
@@ -497,7 +545,7 @@ export function Events() {
       >
         <div className="space-y-6">
           <div className="flex flex-col items-center text-center gap-4 py-4">
-            <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-2">
+            <div className="w-16 h-16 bg-[var(--color-danger)]/10 text-[var(--color-danger)] rounded-full flex items-center justify-center mb-2">
               <AlertTriangle className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-primary">Emin misiniz?</h3>
@@ -505,7 +553,7 @@ export function Events() {
           </div>
           <div className="flex items-center gap-3 w-full">
             <Button variant="ghost" onClick={() => setConfirmDelete(null)} className="flex-1">İptal</Button>
-            <Button variant="primary" onClick={confirmDeleteEvent} className="flex-1 bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]">Sil</Button>
+            <Button variant="primary" onClick={confirmDeleteEvent} className="flex-1 bg-[var(--color-danger-solid)] hover:bg-[var(--color-danger-hover)] text-white shadow-[0_0_15px_color-mix(in_srgb,var(--color-danger)_30%,transparent)]">Sil</Button>
           </div>
         </div>
       </Modal>

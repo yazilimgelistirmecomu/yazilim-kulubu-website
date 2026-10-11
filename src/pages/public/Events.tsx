@@ -6,6 +6,8 @@ import { Link } from 'react-router';
 import { supabase } from '@/api/config';
 import { withTimeout } from '@/utils/promise';
 import { DatabaseError } from '@/components/shared/DatabaseError';
+import { EventCardLink, eventPath } from '@/components/shared/EventCardLink';
+import { EventCountdown } from '@/components/shared/EventCountdown';
 
 // Ticket Card Component for Upcoming Events
 function TicketCard({ event }: { event: any }) {
@@ -23,13 +25,14 @@ function TicketCard({ event }: { event: any }) {
       transition={{ duration: 0.4 }}
       className="relative flex flex-col md:flex-row group w-full cursor-pointer shadow-sm hover:shadow-dynamic"
     >
+      <EventCardLink event={event} className="rounded-2xl" />
       {/* Left side (Main content) */}
       <div className="bg-surface border-2 border-default md:border-r-0 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none p-6 md:p-8 flex-1 relative overflow-hidden transition-colors group-hover:border-[var(--brand-primary)]">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)", backgroundSize: "24px 24px" }}></div>
 
         <div className="relative z-10 flex flex-col md:flex-row gap-6">
-          <div className="flex-shrink-0 w-20 h-20 bg-page border border-default rounded-2xl flex flex-col items-center justify-center text-primary group-hover:bg-[var(--brand-primary)] group-hover:text-white transition-colors">
+          <div className="flex-shrink-0 w-20 h-20 bg-page border border-default rounded-2xl flex flex-col items-center justify-center text-primary group-hover:bg-[var(--brand-primary)] group-hover:text-[var(--brand-text)] transition-colors">
             <div className="text-3xl font-black">{day}</div>
             <div className="text-[10px] font-bold tracking-widest uppercase">{month}</div>
           </div>
@@ -71,8 +74,8 @@ function TicketCard({ event }: { event: any }) {
           <div className="font-mono text-[10px] font-bold text-muted tracking-widest mb-4 hidden md:block" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
             ADMIT ONE
           </div>
-          <div className="flex flex-col gap-2 w-full">
-            <Link to={`/etkinlikler/${event.id}`} className="w-full">
+          <div className="flex flex-col gap-2 w-full relative z-20">
+            <Link to={eventPath(event)} className="w-full">
               <Button variant="secondary" size="sm" className="w-full shadow-sm font-bold bg-page border-default">İncele</Button>
             </Link>
             {event.registration_url && (
@@ -137,7 +140,7 @@ function PastEventsTimeline({ events }: { events: any[] }) {
 
               {/* Event Card */}
               <div className="w-full md:w-1/2 pl-16 md:pl-0">
-                <Link to={`/etkinlikler/${event.id}`} className="block">
+                <Link to={eventPath(event)} className="block">
                   <div className="bg-surface border border-default rounded-dynamic overflow-hidden card-interactive shadow-sm p-2 flex flex-col group-hover:border-[var(--brand-primary)] transition-all">
                     <div className="relative h-48 rounded-2xl overflow-hidden mb-4 bg-page flex items-center justify-center">
                       {event.image_url ? (
@@ -171,7 +174,6 @@ function PastEventsTimeline({ events }: { events: any[] }) {
 }
 
 export function Events() {
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
   const [featuredEvent, setFeaturedEvent] = useState<any>(null);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [pastEvents, setPastEvents] = useState<any[]>([]);
@@ -193,17 +195,13 @@ export function Events() {
       if (dbError) throw dbError;
 
       if (data) {
-        const featured = data.find(e => e.type === 'featured');
-        const upcoming = data.filter(e => e.type === 'upcoming');
+        const featured = data.find(e => e.is_homepage_featured && new Date(e.date).getTime() > Date.now());
+        const upcoming = data.filter(e => e.type === 'upcoming' && e.id !== featured?.id);
         const past = data.filter(e => e.type === 'past').sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         setFeaturedEvent(featured);
         setUpcomingEvents(upcoming);
         setPastEvents(past);
-
-        if (featured && featured.date) {
-          startCountdown(new Date(featured.date));
-        }
       }
     } catch (err: any) {
       console.error("Etkinlikler çekilemedi:", err);
@@ -211,26 +209,6 @@ export function Events() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const startCountdown = (targetDate: Date) => {
-    const updateCountdown = () => {
-      const now = new Date();
-      const difference = targetDate.getTime() - now.getTime();
-
-      if (difference > 0) {
-        setCountdown({
-          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          mins: Math.floor((difference / 1000 / 60) % 60),
-          secs: Math.floor((difference / 1000) % 60)
-        });
-      }
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
   };
 
   if (isLoading) {
@@ -280,24 +258,7 @@ export function Events() {
 
 
                 {/* Countdown */}
-                <div className="mb-10">
-                  <div className="text-[10px] text-muted font-bold tracking-widest mb-3 font-mono">GERİ SAYIM</div>
-                  <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-[340px] sm:max-w-md">
-                    {[
-                      { label: 'GÜN', value: countdown.days },
-                      { label: 'SAAT', value: countdown.hours },
-                      { label: 'DAK', value: countdown.mins },
-                      { label: 'SAN', value: countdown.secs }
-                    ].map((unit, idx) => (
-                      <div key={idx} className="flex flex-col sm:flex-row items-center sm:items-baseline justify-center gap-1 bg-surface border border-default px-2 py-2 sm:px-4 sm:py-2.5 rounded-xl shadow-sm">
-                        <span className="text-xl sm:text-2xl font-black font-mono text-primary">
-                          {String(unit.value).padStart(2, '0')}
-                        </span>
-                        <span className="text-[9px] sm:text-xs font-semibold text-muted font-mono">{unit.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <EventCountdown date={featuredEvent.date} />
 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {featuredEvent.registration_url && (
@@ -305,7 +266,7 @@ export function Events() {
                       Hemen Kayıt Ol <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   )}
-                  <Link to={`/etkinlikler/${featuredEvent.id}`} className="w-full sm:w-auto">
+                  <Link to={eventPath(featuredEvent)} className="w-full sm:w-auto">
                     <Button variant="secondary" size="lg" className="w-full sm:w-auto px-8 rounded-xl font-bold bg-surface hover:bg-elevated border-default">
                       Detayları İncele
                     </Button>

@@ -9,7 +9,7 @@ interface DatabaseErrorProps {
 export function DatabaseError({ message, onRetry }: DatabaseErrorProps) {
   return (
     <div className="min-h-[50vh] flex flex-col items-center justify-center text-center px-4 py-16 max-w-md mx-auto">
-      <div className="w-16 h-16 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center mb-6 border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+      <div className="w-16 h-16 rounded-full bg-[var(--color-danger)]/10 text-[var(--color-danger)] flex items-center justify-center mb-6 border border-[var(--color-danger)]/20 shadow-[0_0_20px_color-mix(in_srgb,var(--color-danger)_10%,transparent)]">
         <WifiOff className="w-8 h-8" />
       </div>
       <h3 className="text-2xl font-bold text-primary mb-3">Bağlantı Sorunu</h3>
