@@ -28,8 +28,8 @@ const branchesData: BranchData[] = [
       '> Gerçek ürünler geliştirip canlıya alıyoruz.'
     ],
     tech: ['React', 'Node.js', 'Next.js', 'TypeScript', 'PostgreSQL'],
-    color: '#7F77DD',
-    colorBg: 'rgba(127,119,221,0.13)',
+    color: 'var(--branch-web)',
+    colorBg: 'color-mix(in srgb, var(--branch-web) 13%, transparent)',
   },
   {
     name: 'Mobil Geliştirme',
@@ -41,8 +41,8 @@ const branchesData: BranchData[] = [
       '> Uygulama marketlerinde yer alacak projeler üretiyoruz.'
     ],
     tech: ['Flutter', 'Dart', 'Swift', 'Kotlin', 'Firebase'],
-    color: '#1D9E75',
-    colorBg: 'rgba(29,158,117,0.13)',
+    color: 'var(--branch-mobile)',
+    colorBg: 'color-mix(in srgb, var(--branch-mobile) 13%, transparent)',
   },
   {
     name: 'Oyun Geliştirme',
@@ -54,8 +54,8 @@ const branchesData: BranchData[] = [
       '> Game Jam maratonlarında çalışan prototipler üretiyoruz.'
     ],
     tech: ['Unity', 'C#', 'Blender', 'Unreal Engine', 'C++'],
-    color: '#D85A30',
-    colorBg: 'rgba(216,90,48,0.13)',
+    color: 'var(--branch-game)',
+    colorBg: 'color-mix(in srgb, var(--branch-game) 13%, transparent)',
     darkInvert: true,
   },
   {
@@ -68,8 +68,8 @@ const branchesData: BranchData[] = [
       '> Merkeziyetsiz sistemler inşa ediyoruz.'
     ],
     tech: ['Solidity', 'Ethereum', 'Web3.js', 'Hardhat'],
-    color: '#BA7517',
-    colorBg: 'rgba(186,117,23,0.13)',
+    color: 'var(--branch-blockchain)',
+    colorBg: 'color-mix(in srgb, var(--branch-blockchain) 13%, transparent)',
     darkInvert: true,
   },
 ];
@@ -104,7 +104,7 @@ function TerminalInner({ branch }: { branch: BranchData }) {
     <div className="flex flex-col justify-between h-full flex-1">
       <div>
         {/* Command Line */}
-        <div className="mb-6 text-slate-500 dark:text-slate-400">
+        <div className="mb-6 text-muted">
           <span className="text-[var(--brand-primary)] font-bold mr-2">$</span>
           <TypewriterText text={branch.cmd} delay={0} onComplete={() => setLinesRevealed(1)} />
         </div>
@@ -112,7 +112,7 @@ function TerminalInner({ branch }: { branch: BranchData }) {
         {/* Description Lines */}
         <div className="space-y-4 mb-8 min-h-[110px]">
           {branch.descLines.map((line, idx) => (
-            <div key={idx} className="text-slate-700 dark:text-slate-300 font-medium tracking-wide leading-relaxed">
+            <div key={idx} className="text-primary font-medium tracking-wide leading-relaxed">
               {linesRevealed > idx && (
                 <TypewriterText
                   text={line}
@@ -135,7 +135,7 @@ function TerminalInner({ branch }: { branch: BranchData }) {
         {branch.tech.map(tech => (
           <span
             key={tech}
-            className="px-3 py-1.5 text-xs font-mono border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md cursor-default"
+            className="px-3 py-1.5 text-xs font-mono border border-default bg-surface text-muted rounded-md cursor-default"
           >
             {tech}
           </span>
@@ -147,15 +147,15 @@ function TerminalInner({ branch }: { branch: BranchData }) {
 
 function TerminalContent({ branch }: { branch: BranchData }) {
   return (
-    <div className="w-full bg-[#F8FAFC] dark:bg-[#0D1117] rounded-xl border border-slate-300 dark:border-slate-800 shadow-xl overflow-hidden flex flex-col transition-colors duration-300">
+    <div className="w-full bg-[var(--terminal-bg)] rounded-xl border border-default shadow-xl overflow-hidden flex flex-col transition-colors duration-300">
       {/* Terminal Header */}
-      <div className="flex items-center px-4 py-3 bg-[#E2E8F0] dark:bg-[#161b22] border-b border-slate-300 dark:border-slate-800 transition-colors duration-300">
+      <div className="flex items-center px-4 py-3 bg-[var(--terminal-bar)] border-b border-default transition-colors duration-300">
         <div className="flex gap-2 mr-4">
-          <div className="w-3 h-3 rounded-full bg-[#FF5F56] border border-black/10 dark:border-transparent"></div>
-          <div className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-black/10 dark:border-transparent"></div>
-          <div className="w-3 h-3 rounded-full bg-[#27C93F] border border-black/10 dark:border-transparent"></div>
+          <div className="w-3 h-3 rounded-full bg-[var(--color-danger)] border border-black/10 dark:border-transparent"></div>
+          <div className="w-3 h-3 rounded-full bg-[var(--color-warning)] border border-black/10 dark:border-transparent"></div>
+          <div className="w-3 h-3 rounded-full bg-[var(--color-success)] border border-black/10 dark:border-transparent"></div>
         </div>
-        <div className="text-xs font-mono text-slate-500 dark:text-slate-400 tracking-widest uppercase transition-opacity duration-300">
+        <div className="text-xs font-mono text-muted tracking-widest uppercase transition-opacity duration-300">
           {branch.name}
         </div>
       </div>
@@ -249,7 +249,7 @@ export function BranchesSection() {
                   style={{
                     top: '-50px',
                     height: 'calc(100% + 50px)',
-                    backgroundImage: `linear-gradient(to right, ${activeBranch.color}60 2px, transparent 2px), linear-gradient(to bottom, ${activeBranch.color}60 2px, transparent 2px)`,
+                    backgroundImage: `linear-gradient(to right, color-mix(in srgb, ${activeBranch.color} 38%, transparent) 2px, transparent 2px), linear-gradient(to bottom, color-mix(in srgb, ${activeBranch.color} 38%, transparent) 2px, transparent 2px)`,
                     backgroundSize: '50px 50px',
                   }}
                 />
@@ -288,7 +288,7 @@ export function BranchesSection() {
               onClick={() => setActiveIndex(idx)}
               className={`h-2.5 rounded-full transition-all duration-300 ${idx === activeIndex
                 ? 'w-8 bg-[var(--brand-primary)]'
-                : 'w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600'
+                : 'w-2.5 bg-[var(--border-strong)] hover:bg-[var(--text-subtle)]'
                 }`}
               aria-label={`Slayt ${idx + 1}`}
             />

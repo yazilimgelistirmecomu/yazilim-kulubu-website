@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { resolveRgb } from '@/utils/themeColor';
 
 export function NetworkBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -64,7 +65,7 @@ export function NetworkBackground() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
         const isDark = document.documentElement.classList.contains('dark');
-        ctx.fillStyle = isDark ? 'rgba(127, 119, 221, 0.6)' : 'rgba(83, 74, 183, 0.4)'; // Brand primary colors
+        ctx.fillStyle = `rgba(${resolveRgb('var(--brand-primary)')}, ${isDark ? 0.6 : 0.4})`;
         ctx.fill();
       }
 
@@ -141,7 +142,7 @@ export function NetworkBackground() {
           if (distance < (canvas.width / 10) * (canvas.height / 10)) {
             opacityValue = 1 - (distance / 15000);
             if (!ctx) return;
-            const colorRGB = isDark ? '127, 119, 221' : '83, 74, 183';
+            const colorRGB = resolveRgb('var(--brand-primary)');
             ctx.strokeStyle = `rgba(${colorRGB}, ${opacityValue * 0.65})`;
             ctx.lineWidth = 1;
             ctx.beginPath();

@@ -1,4 +1,4 @@
-import { Plus, Search, Edit2, Trash2, Linkedin, Github, Instagram, UploadCloud, AlertTriangle, Loader2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Linkedin, Github, Instagram, UploadCloud, AlertTriangle, Loader2, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
 import { useState, useEffect } from "react";
@@ -13,6 +13,7 @@ export function Team() {
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [movingId, setMovingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -36,7 +37,8 @@ export function Team() {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .order('created_at', { ascending: true });
+        .order('display_order', { ascending: true })
+        .order('id', { ascending: true });
         
       if (error) throw error;
       setMembers(data || []);
@@ -47,8 +49,18 @@ export function Team() {
     }
   };
 
+  const [deleteProjects, setDeleteProjects] = useState<string[]>([]);
+
   const handleDelete = (id: string) => {
     setConfirmDelete(id);
+    setDeleteProjects([]);
+    supabase
+      .from('project_developers')
+      .select('projects(title)')
+      .eq('profile_id', id)
+      .then(({ data }) => {
+        setDeleteProjects((data || []).map((r: any) => r.projects?.title).filter(Boolean));
+      });
   };
 
   const confirmDeleteMember = async () => {
@@ -151,6 +163,21 @@ export function Team() {
     }
   };
 
+  // Sıra: komşuyla yer değiştirme tek RPC ile atomik yapılır
+  const handleMove = async (id: string, direction: 'up' | 'down') => {
+    setMovingId(id);
+    try {
+      const { error } = await supabase.rpc('move_team_member', { p_id: id, p_direction: direction });
+      if (error) throw error;
+      await fetchMembers();
+    } catch (error: any) {
+      console.error("Sıra değiştirilemedi:", error);
+      alert("Sıra değiştirilemedi: " + error.message);
+    } finally {
+      setMovingId(null);
+    }
+  };
+
   const filteredMembers = members.filter(member => {
     const fullName = `${member.first_name || ''} ${member.last_name || ''}`.toLowerCase();
     const position = (member.position || '').toLowerCase();
@@ -170,9 +197,9 @@ export function Team() {
 
       <div className="bg-page border border-default rounded-2xl shadow-sm overflow-hidden relative">
         <div className="w-full h-8 bg-surface border-b border-default flex items-center px-4 gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-danger-solid)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-warning)]"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-success)]"></div>
           <span className="text-[10px] text-muted ml-4 font-mono">root@ygk-server:~/admin/team</span>
         </div>
 
@@ -208,6 +235,7 @@ export function Team() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface border-b border-default">
+                  <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider w-24">Sıra</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Üye Bilgisi</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Rol</th>
                   <th className="p-4 text-xs font-bold text-muted uppercase tracking-wider">Bölüm</th>
@@ -217,8 +245,22 @@ export function Team() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-default">
-                {filteredMembers.map((member) => (
+                {filteredMembers.map((member) => {
+                  const index = members.findIndex(m => m.id === member.id);
+                  const reorderDisabled = movingId !== null || searchQuery.trim() !== '';
+                  return (
                   <tr key={member.id} className="hover:bg-surface/50 transition-colors">
+                    <td className="p-4">
+                      <div className="flex items-center gap-1">
+                        <span className="w-6 text-xs font-mono text-muted">{index + 1}</span>
+                        <button onClick={() => handleMove(member.id, 'up')} disabled={reorderDisabled || index === 0} className="p-1 text-muted hover:text-[var(--brand-primary)] bg-surface border border-default rounded-md transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title={searchQuery.trim() ? 'Sıralamak için aramayı temizleyin' : 'Yukarı taşı'} aria-label="Yukarı taşı">
+                          <ChevronUp className="w-4 h-4 pointer-events-none" />
+                        </button>
+                        <button onClick={() => handleMove(member.id, 'down')} disabled={reorderDisabled || index === members.length - 1} className="p-1 text-muted hover:text-[var(--brand-primary)] bg-surface border border-default rounded-md transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" title={searchQuery.trim() ? 'Sıralamak için aramayı temizleyin' : 'Aşağı taşı'} aria-label="Aşağı taşı">
+                          <ChevronDown className="w-4 h-4 pointer-events-none" />
+                        </button>
+                      </div>
+                    </td>
                     <td className="p-4 flex items-center gap-3">
                       {member.avatar_url ? (
                         <img src={member.avatar_url} alt={member.first_name} className="w-10 h-10 rounded-full object-cover border border-default" />
@@ -259,7 +301,7 @@ export function Team() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${member.is_public !== false ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-slate-500/10 text-muted border-default'}`}>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${member.is_public !== false ? 'bg-[var(--color-success)]/10 text-[var(--color-success)] border-[var(--color-success)]/20' : 'bg-surface text-muted border-default'}`}>
                         {member.is_public !== false ? 'Sitede' : 'Gizli'}
                       </span>
                     </td>
@@ -267,12 +309,13 @@ export function Team() {
                       <button onClick={() => handleEdit(member)} className="p-2 text-muted hover:text-[var(--brand-primary)] bg-surface hover:bg-page border border-default rounded-lg transition-colors cursor-pointer" title="Düzenle">
                         <Edit2 className="w-4 h-4 pointer-events-none" />
                       </button>
-                      <button onClick={() => handleDelete(member.id)} className="p-2 text-muted hover:text-red-500 bg-surface hover:bg-red-500/10 border border-default hover:border-red-500/20 rounded-lg transition-colors cursor-pointer" title="Sil">
+                      <button onClick={() => handleDelete(member.id)} className="p-2 text-muted hover:text-[var(--color-danger)] bg-surface hover:bg-[var(--color-danger)]/10 border border-default hover:border-[var(--color-danger)]/20 rounded-lg transition-colors cursor-pointer" title="Sil">
                         <Trash2 className="w-4 h-4 pointer-events-none" />
                       </button>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -371,15 +414,18 @@ export function Team() {
       >
         <div className="space-y-6">
           <div className="flex flex-col items-center text-center gap-4 py-4">
-            <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-2">
+            <div className="w-16 h-16 bg-[var(--color-danger)]/10 text-[var(--color-danger)] rounded-full flex items-center justify-center mb-2">
               <AlertTriangle className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-primary">Emin misiniz?</h3>
-            <p className="text-muted">Bu ekip üyesini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</p>
+            <p className="text-muted">
+              Bu ekip üyesini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              {deleteProjects.length > 0 && <> Şu projelerden de çıkarılacak: <strong className="text-primary">{deleteProjects.join(', ')}</strong>.</>}
+            </p>
           </div>
           <div className="flex items-center gap-3 w-full">
             <Button variant="ghost" onClick={() => setConfirmDelete(null)} className="flex-1">İptal</Button>
-            <Button variant="primary" onClick={confirmDeleteMember} className="flex-1 bg-red-500 hover:bg-red-600 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]">Sil</Button>
+            <Button variant="primary" onClick={confirmDeleteMember} className="flex-1 bg-[var(--color-danger-solid)] hover:bg-[var(--color-danger-hover)] text-white shadow-[0_0_15px_color-mix(in_srgb,var(--color-danger)_30%,transparent)]">Sil</Button>
           </div>
         </div>
       </Modal>

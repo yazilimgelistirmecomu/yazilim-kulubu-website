@@ -25,10 +25,10 @@ export function GlowingOrbsBackground() {
           repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] rounded-full bg-[#534AB7] opacity-20 dark:opacity-30 blur-[120px] mix-blend-multiply dark:mix-blend-screen"
+        className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] rounded-full bg-[var(--brand-primary)] opacity-20 dark:opacity-30 blur-[120px] mix-blend-multiply dark:mix-blend-screen"
       />
       
-      {/* Orb 2: Secondary Brand Color (Light Indigo) */}
+      {/* Orb 2: Secondary Brand Color (Light Blue) */}
       <motion.div
         animate={{
           x: [0, -150, 100, 0],
@@ -40,10 +40,10 @@ export function GlowingOrbsBackground() {
           repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] max-w-[900px] max-h-[900px] rounded-full bg-[#7F77DD] opacity-20 dark:opacity-30 blur-[150px] mix-blend-multiply dark:mix-blend-screen"
+        className="absolute bottom-[-20%] right-[-10%] w-[60vw] h-[60vw] max-w-[900px] max-h-[900px] rounded-full bg-[var(--brand-accent)] opacity-20 dark:opacity-30 blur-[150px] mix-blend-multiply dark:mix-blend-screen"
       />
 
-      {/* Orb 3: Accent Color (Emerald/Teal) to give it a modern tech vibe */}
+      {/* Orb 3: Accent Color (Mid Blue) to give it a modern tech vibe */}
       <motion.div
         animate={{
           x: [0, 100, -150, 0],
@@ -55,7 +55,7 @@ export function GlowingOrbsBackground() {
           repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute top-[30%] left-[50%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full bg-[#1D9E75] opacity-10 dark:opacity-20 blur-[100px] mix-blend-multiply dark:mix-blend-screen"
+        className="absolute top-[30%] left-[50%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full bg-[var(--brand-secondary)] opacity-10 dark:opacity-20 blur-[100px] mix-blend-multiply dark:mix-blend-screen"
       />
     </div>
   );

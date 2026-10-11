@@ -1,21 +1,28 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, MapPin, Users, ArrowLeft, ArrowRight, Clock, Image as ImageIcon, Loader2, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
-import { Link, useParams } from 'react-router';
+import { Link, Navigate, useParams } from 'react-router';
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/api/config';
+import { eventService } from '@/api/services/events';
 import { SmartImage } from '@/components/shared/SmartImage';
+import { DatabaseError } from '@/components/shared/DatabaseError';
+import { EventCountdown } from '@/components/shared/EventCountdown';
+import { withTimeout } from '@/utils/promise';
+import { NotFound } from './NotFound';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function EventDetail() {
-  const { id } = useParams();
+  const { slug = '' } = useParams();
   const [event, setEvent] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [redirectSlug, setRedirectSlug] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    if (id) {
-      fetchEventDetails();
-    }
-  }, [id]);
+    fetchEventDetails();
+  }, [slug]);
 
   const handleNextPhoto = useCallback(() => {
     if (!event?.gallery_urls) return;
@@ -46,16 +53,36 @@ export function EventDetail() {
 
   const fetchEventDetails = async () => {
     setIsLoading(true);
+    setError(null);
+    setNotFound(false);
+    setRedirectSlug(null);
+    setEvent(null);
     try {
-      const { data, error } = await supabase.from('events').select('*').eq('id', id).single();
-      if (error) throw error;
+      let data = await withTimeout<any>(eventService.getEventBySlug(slug), 8000);
+      // Eski /etkinlikler/:uuid linkleri → slug adresine yönlendir
+      if (!data && UUID_PATTERN.test(slug)) {
+        const found = await withTimeout<any>(eventService.getEventSlugById(slug), 8000);
+        if (found) {
+          setRedirectSlug(found);
+          return;
+        }
+      }
+      if (!data) {
+        setNotFound(true);
+        return;
+      }
       setEvent(data);
-    } catch (error) {
-      console.error("Etkinlik detayı çekilemedi:", error);
+    } catch (err) {
+      console.error("Etkinlik detayı çekilemedi:", err);
+      setError('Bağlantı Hatası: Etkinlik yüklenemedi. Lütfen daha sonra tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (redirectSlug) {
+    return <Navigate to={`/etkinlikler/${redirectSlug}`} replace />;
+  }
 
   if (isLoading) {
     return (
@@ -66,17 +93,19 @@ export function EventDetail() {
     );
   }
 
-  if (!event) {
+  if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-page">
-        <h1 className="text-2xl font-bold text-primary">Etkinlik Bulunamadı</h1>
-        <Link to="/etkinlikler" className="text-[var(--brand-primary)] hover:underline">Etkinliklere Dön</Link>
+      <div className="min-h-screen bg-page pt-24 flex items-center justify-center">
+        <DatabaseError message={error} onRetry={fetchEventDetails} />
       </div>
     );
   }
 
+  if (notFound || !event) return <NotFound />;
+
   const formattedDate = new Date(event.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
   const formattedTime = new Date(event.date).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  const isUpcoming = event.type !== 'past' && new Date(event.date).getTime() > Date.now();
 
   return (
     <div className="min-h-screen bg-page pt-24 sm:pt-22">
@@ -107,8 +136,8 @@ export function EventDetail() {
           </Link>
 
           <div className="flex items-center gap-3 mb-6">
-            <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${event.type === 'featured' ? 'bg-[var(--brand-primary)] text-white shadow-lg shadow-[var(--brand-primary)]/30' :
-              event.type === 'upcoming' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+            <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider ${event.type === 'featured' ? 'bg-[var(--brand-primary)] text-[var(--brand-text)] shadow-lg shadow-[var(--brand-primary)]/30' :
+              event.type === 'upcoming' ? 'bg-[var(--color-success)]/20 text-[var(--color-success)] border border-[var(--color-success)]/30' :
                 'bg-surface/80 border border-default text-muted'
               }`}>
               {event.type === 'featured' ? 'Öne Çıkan' : event.type === 'upcoming' ? 'Yaklaşan Etkinlik' : 'Geçmiş Etkinlik'}
@@ -142,13 +171,15 @@ export function EventDetail() {
             )}
           </div>
 
+          {isUpcoming && <EventCountdown date={event.date} className="mt-10" />}
+
           {event.registration_url && event.type !== 'past' && (
             <div className="mt-10">
               <a
                 href={event.registration_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--brand-primary)] text-white font-bold rounded-xl shadow-dynamic hover:bg-[var(--brand-primary-hover)] transition-all transform hover:-translate-y-0.5 duration-200"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[var(--brand-primary)] text-[var(--brand-text)] font-bold rounded-xl shadow-dynamic hover:bg-[var(--brand-primary-hover)] transition-all transform hover:-translate-y-0.5 duration-200"
               >
                 Kayıt Ol <ArrowRight className="w-4 h-4 ml-1" />
               </a>

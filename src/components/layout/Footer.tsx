@@ -1,40 +1,9 @@
 import { Link } from 'react-router';
-import { Code2, Linkedin, Instagram, Youtube, Mail } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/api/config';
+import { Linkedin, Instagram, Youtube } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export function Footer() {
-  const [settings, setSettings] = useState({
-    email: 'yazilimgelistirmecomu@gmail.com',
-    instagram: 'https://www.instagram.com/comuyazilimgelistirme/?hl=tr',
-    youtube: 'https://www.youtube.com/@comuyazilimgelistirme',
-    linkedin: 'https://www.linkedin.com/company/%C3%A7om%C3%BC-yaz%C4%B1l%C4%B1m-geli%C5%9Ftirme-kul%C3%BCb%C3%BC/'
-  });
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const { data, error } = await supabase.from('site_settings').select('*');
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const settingsMap: any = {};
-          data.forEach(item => {
-            settingsMap[item.key] = item.value;
-          });
-          setSettings(prev => ({
-            email: settingsMap['contact_email'] || prev.email,
-            instagram: settingsMap['social_instagram'] || prev.instagram,
-            youtube: settingsMap['social_youtube'] || prev.youtube,
-            linkedin: settingsMap['social_linkedin'] || prev.linkedin
-          }));
-        }
-      } catch (error) {
-        console.error("Footer ayarları çekilemedi:", error);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const settings = useSiteSettings();
 
   return (
     <footer className="bg-surface border-t border-default transition-colors duration-300">

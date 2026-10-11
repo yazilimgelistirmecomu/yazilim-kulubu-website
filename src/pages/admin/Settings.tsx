@@ -2,6 +2,7 @@ import { Save, Globe, Lock, Mail, Instagram, Youtube, Linkedin, Loader2, FileTex
 import { Button } from '@/components/shared/Button';
 import { useState, useEffect } from "react";
 import { supabase } from "@/api/config";
+import { DEFAULT_CONTACT_SETTINGS } from "@/hooks/useSiteSettings";
 import { IMAGE_INPUT_ACCEPT, storageService } from "@/api/services/storage";
 
 export function Settings() {
@@ -9,7 +10,6 @@ export function Settings() {
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
     email: '',
-    whatsapp: '',
     instagram: '',
     youtube: '',
     linkedin: '',
@@ -44,8 +44,7 @@ export function Settings() {
           settingsMap[item.key] = item.value;
         });
         setSettings(prev => ({
-          email: settingsMap['contact_email'] || 'ygk@comu.edu.tr',
-          whatsapp: settingsMap['contact_whatsapp'] || '',
+          email: settingsMap['contact_email'] || '',
           instagram: settingsMap['social_instagram'] || '',
           youtube: settingsMap['social_youtube'] || '',
           linkedin: settingsMap['social_linkedin'] || '',
@@ -75,7 +74,6 @@ export function Settings() {
 
       const updates = [
         { key: 'contact_email', value: settings.email },
-        { key: 'contact_whatsapp', value: settings.whatsapp },
         { key: 'social_instagram', value: settings.instagram },
         { key: 'social_youtube', value: settings.youtube },
         { key: 'social_linkedin', value: settings.linkedin },
@@ -265,6 +263,7 @@ export function Settings() {
                   type="email"
                   value={settings.email}
                   onChange={e => setSettings({ ...settings, email: e.target.value })}
+                  placeholder={DEFAULT_CONTACT_SETTINGS.email}
                   className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]"
                 />
               </div>
@@ -290,6 +289,7 @@ export function Settings() {
                   type="url"
                   value={settings.instagram}
                   onChange={e => setSettings({ ...settings, instagram: e.target.value })}
+                  placeholder={DEFAULT_CONTACT_SETTINGS.instagram}
                   className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]"
                 />
               </div>
@@ -301,6 +301,7 @@ export function Settings() {
                   type="url"
                   value={settings.youtube}
                   onChange={e => setSettings({ ...settings, youtube: e.target.value })}
+                  placeholder={DEFAULT_CONTACT_SETTINGS.youtube}
                   className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]"
                 />
               </div>
@@ -312,6 +313,7 @@ export function Settings() {
                   type="url"
                   value={settings.linkedin}
                   onChange={e => setSettings({ ...settings, linkedin: e.target.value })}
+                  placeholder={DEFAULT_CONTACT_SETTINGS.linkedin}
                   className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]"
                 />
               </div>
@@ -322,7 +324,7 @@ export function Settings() {
           <div className="bg-page border border-default rounded-2xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-default bg-surface/50">
               <div className="flex items-center gap-3 mb-1">
-                <Lock className="w-5 h-5 text-red-500" />
+                <Lock className="w-5 h-5 text-[var(--color-danger)]" />
                 <h2 className="text-lg font-bold text-primary">Güvenlik</h2>
               </div>
               <p className="text-sm text-muted">Yönetici paneli giriş ayarları.</p>
@@ -335,7 +337,7 @@ export function Settings() {
                   value={passwordForm.newPassword}
                   onChange={e => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                   placeholder="Yeni şifrenizi girin"
-                  className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-red-500"
+                  className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--color-danger)]"
                 />
               </div>
               <div className="space-y-1.5">
@@ -345,7 +347,7 @@ export function Settings() {
                   value={passwordForm.confirmPassword}
                   onChange={e => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   placeholder="Yeni şifrenizi doğrulayın"
-                  className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-red-500"
+                  className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--color-danger)]"
                 />
               </div>
               <div className="pt-2">
@@ -353,7 +355,7 @@ export function Settings() {
                   variant="secondary"
                   onClick={handleChangePassword}
                   disabled={isChangingPassword || !passwordForm.newPassword}
-                  className="w-full border-red-500/20 text-red-500 hover:bg-red-500/10"
+                  className="w-full border-[var(--color-danger)]/20 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10"
                 >
                   {isChangingPassword ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
                 </Button>

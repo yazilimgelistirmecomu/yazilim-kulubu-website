@@ -17,6 +17,64 @@ export const eventService = {
     return data;
   },
 
+  // Slug ile tek etkinlik (public detay sayfası)
+  async getEventBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Eski /etkinlikler/:uuid linkleri için: id ile slug bul
+  async getEventSlugById(id: string) {
+    const { data, error } = await supabase
+      .from('events')
+      .select('slug')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.slug ?? null;
+  },
+
+  // Ana sayfada öne çıkan etkinliği değiştir (null = işareti kaldır)
+  async setFeaturedEvent(id: string | null) {
+    const { error } = await supabase.rpc('set_featured_event', { p_id: id });
+    if (error) throw error;
+  },
+
+  // Ana sayfa için öne çıkan etkinlik (tarihi geçmişse null)
+  async getHomepageFeaturedEvent() {
+    const { data, error } = await supabase
+      .from('events')
+      .select('id,slug,title,date,location,description,image_url')
+      .eq('is_homepage_featured', true)
+      .gt('date', new Date().toISOString())
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Ana sayfa listesi için adaylar: en yakın yaklaşanlar + en yeni geçmişler.
+  // Öne çıkan karttaki etkinliği çıkarmak için her gruptan 1 fazla çekilir.
+  async getHomepageEventCandidates(limit = 3) {
+    const columns = 'id,slug,title,date,location,description,image_url';
+    const now = new Date().toISOString();
+    const [upcoming, past] = await Promise.all([
+      supabase.from('events').select(columns).gt('date', now).order('date', { ascending: true }).limit(limit + 1),
+      supabase.from('events').select(columns).lte('date', now).order('date', { ascending: false }).limit(limit + 1),
+    ]);
+
+    if (upcoming.error) throw upcoming.error;
+    if (past.error) throw past.error;
+    return { upcoming: upcoming.data ?? [], past: past.data ?? [] };
+  },
+
   // Yeni etkinlik ekle
   async createEvent(event: EventInsert) {
     const { data, error } = await supabase

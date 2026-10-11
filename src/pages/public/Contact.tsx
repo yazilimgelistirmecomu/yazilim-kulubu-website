@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
-import { MapPin, Mail, Clock, Instagram, Linkedin, Youtube, Send, ChevronDown, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
+import { MapPin, Mail, Clock, Send, ChevronDown, ArrowRight, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/shared/Button';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Select,
   SelectContent,
@@ -10,6 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { supabase } from '@/api/config';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { getSocialPlatforms } from '@/utils/socialPlatforms';
 
 export function Contact() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -22,37 +24,7 @@ export function Contact() {
     message: ''
   });
 
-  const [settings, setSettings] = useState({
-    email: 'ygk@comu.edu.tr',
-    instagram: 'instagram.com/ygk_comu',
-    youtube: 'youtube.com/@ygk_comu',
-    linkedin: 'linkedin.com/company/ygk'
-  });
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const { data, error } = await supabase.from('site_settings').select('*');
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          const settingsMap: any = {};
-          data.forEach(item => {
-            settingsMap[item.key] = item.value;
-          });
-          setSettings(prev => ({
-            email: settingsMap['contact_email'] || prev.email,
-            instagram: settingsMap['social_instagram'] || prev.instagram,
-            youtube: settingsMap['social_youtube'] || prev.youtube,
-            linkedin: settingsMap['social_linkedin'] || prev.linkedin
-          }));
-        }
-      } catch (error) {
-        console.error("İletişim ayarları çekilemedi:", error);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const settings = useSiteSettings();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,32 +66,7 @@ export function Contact() {
     }
   };
 
-  const platforms = [
-    {
-      name: 'Instagram',
-      handle: settings.instagram.replace('https://', '').replace('www.', ''),
-      url: settings.instagram.startsWith('http') ? settings.instagram : `https://${settings.instagram}`,
-      icon: Instagram,
-      color: '#E1306C',
-      desc: 'Güncel haberler ve duyurular'
-    },
-    {
-      name: 'YouTube',
-      handle: settings.youtube.replace('https://', '').replace('www.', ''),
-      url: settings.youtube.startsWith('http') ? settings.youtube : `https://${settings.youtube}`,
-      icon: Youtube,
-      color: '#FF0000',
-      desc: 'Eğitim videoları ve etkinlik kayıtları'
-    },
-    {
-      name: 'LinkedIn',
-      handle: settings.linkedin.replace('https://', '').replace('www.', ''),
-      url: settings.linkedin.startsWith('http') ? settings.linkedin : `https://${settings.linkedin}`,
-      icon: Linkedin,
-      color: '#0A66C2',
-      desc: 'Profesyonel ağımız'
-    }
-  ];
+  const platforms = getSocialPlatforms(settings);
 
   return (
     <div className="min-h-screen bg-page transition-colors duration-300">
@@ -194,25 +141,25 @@ export function Contact() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-12 text-center bg-surface border border-default rounded-xl p-8 shadow-dynamic"
               >
-                <div className="w-20 h-20 bg-green-500/10 text-green-500 border border-green-500/20 rounded-full flex items-center justify-center mb-6">
+                <div className="w-20 h-20 bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/20 rounded-full flex items-center justify-center mb-6">
                   <CheckCircle className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-bold font-mono text-slate-800 dark:text-slate-200 mb-3">status: 200 OK</h3>
-                <p className="text-slate-500 dark:text-slate-400 font-mono text-sm mb-8 max-w-[320px]">
+                <h3 className="text-2xl font-bold font-mono text-primary mb-3">status: 200 OK</h3>
+                <p className="text-muted font-mono text-sm mb-8 max-w-[320px]">
                   // Mesajınız ulaştı. En kısa sürede döneceğiz.
                 </p>
                 <Button onClick={() => {
                   setIsSubmitted(false);
                   setFormData({ fullName: '', email: '', subject: 'uyelik', message: '' });
-                }} variant="secondary" className="font-bold border-slate-300 dark:border-slate-700 px-8 font-mono">
+                }} variant="secondary" className="font-bold border-default px-8 font-mono">
                   reset()
                 </Button>
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="group">
-                  <label className="block text-xs font-mono mb-2 text-slate-600 dark:text-slate-400 transition-colors group-focus-within:text-[var(--brand-primary)]">
-                    <span className="text-[var(--brand-primary)] dark:text-[#b490ff]">let</span> <span className="text-[#D85A30] dark:text-[#E27756]">fullName</span>: string;
+                  <label className="block text-xs font-mono mb-2 text-muted transition-colors group-focus-within:text-[var(--brand-primary)]">
+                    <span className="text-[var(--brand-primary)]">let</span> <span className="text-[var(--accent-fg)]">fullName</span>: string;
                   </label>
                   <input
                     type="text"
@@ -221,14 +168,14 @@ export function Contact() {
                     maxLength={120}
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-slate-800 dark:text-slate-200 shadow-sm"
+                    className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-primary shadow-sm"
                     placeholder="'Adınız Soyadınız'"
                   />
                 </div>
 
                 <div className="group">
-                  <label className="block text-xs font-mono mb-2 text-slate-600 dark:text-slate-400 transition-colors group-focus-within:text-[var(--brand-primary)]">
-                    <span className="text-[var(--brand-primary)] dark:text-[#b490ff]">const</span> <span className="text-[#D85A30] dark:text-[#E27756]">email</span>: string;
+                  <label className="block text-xs font-mono mb-2 text-muted transition-colors group-focus-within:text-[var(--brand-primary)]">
+                    <span className="text-[var(--brand-primary)]">const</span> <span className="text-[var(--accent-fg)]">email</span>: string;
                   </label>
                   <input
                     type="email"
@@ -236,36 +183,36 @@ export function Contact() {
                     maxLength={254}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-slate-800 dark:text-slate-200 shadow-sm"
+                    className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-primary shadow-sm"
                     placeholder="'ornek@email.com'"
                   />
                 </div>
 
                 <div className="group">
-                  <label className="block text-xs font-mono mb-2 text-slate-600 dark:text-slate-400 transition-colors group-focus-within:text-[var(--brand-primary)]">
-                    <span className="text-[var(--brand-primary)] dark:text-[#b490ff]">let</span> <span className="text-[#D85A30] dark:text-[#E27756]">subject</span>: string;
+                  <label className="block text-xs font-mono mb-2 text-muted transition-colors group-focus-within:text-[var(--brand-primary)]">
+                    <span className="text-[var(--brand-primary)]">let</span> <span className="text-[var(--accent-fg)]">subject</span>: string;
                   </label>
                   <Select value={formData.subject} onValueChange={(val) => setFormData({ ...formData, subject: val })}>
-                    <SelectTrigger className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-slate-800 dark:text-slate-200 shadow-sm h-auto">
+                    <SelectTrigger className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-primary shadow-sm h-auto">
                       <SelectValue placeholder="Konu Seçin" />
                     </SelectTrigger>
                     <SelectContent className="bg-surface border-default font-mono text-sm shadow-xl rounded-lg overflow-hidden">
-                      <SelectItem value="uyelik" className="focus:bg-slate-100 dark:focus:bg-slate-800 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Üyelik Hakkında</SelectItem>
-                      <SelectItem value="etkinlik" className="focus:bg-slate-100 dark:focus:bg-slate-800 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Etkinlikler</SelectItem>
-                      <SelectItem value="sponsorluk" className="focus:bg-slate-100 dark:focus:bg-slate-800 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Sponsorluk Görüşmesi</SelectItem>
-                      <SelectItem value="proje" className="focus:bg-slate-100 dark:focus:bg-slate-800 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Proje İş Birliği</SelectItem>
-                      <SelectItem value="medya" className="focus:bg-slate-100 dark:focus:bg-slate-800 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Medya / Basın</SelectItem>
-                      <SelectItem value="diger" className="focus:bg-slate-100 dark:focus:bg-slate-800 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Diğer</SelectItem>
+                      <SelectItem value="uyelik" className="focus:bg-[var(--brand-primary)]/10 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Üyelik Hakkında</SelectItem>
+                      <SelectItem value="etkinlik" className="focus:bg-[var(--brand-primary)]/10 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Etkinlikler</SelectItem>
+                      <SelectItem value="sponsorluk" className="focus:bg-[var(--brand-primary)]/10 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Sponsorluk Görüşmesi</SelectItem>
+                      <SelectItem value="proje" className="focus:bg-[var(--brand-primary)]/10 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Proje İş Birliği</SelectItem>
+                      <SelectItem value="medya" className="focus:bg-[var(--brand-primary)]/10 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Medya / Basın</SelectItem>
+                      <SelectItem value="diger" className="focus:bg-[var(--brand-primary)]/10 focus:text-[var(--brand-primary)] cursor-pointer py-2.5">Diğer</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="group">
-                  <label className="block text-xs font-mono mb-2 text-slate-600 dark:text-slate-400 transition-colors group-focus-within:text-[var(--brand-primary)]">
-                    <span className="text-[var(--brand-primary)] dark:text-[#b490ff]">const</span> <span className="text-[#D85A30] dark:text-[#E27756]">message</span>: string;
+                  <label className="block text-xs font-mono mb-2 text-muted transition-colors group-focus-within:text-[var(--brand-primary)]">
+                    <span className="text-[var(--brand-primary)]">const</span> <span className="text-[var(--accent-fg)]">message</span>: string;
                   </label>
                   <textarea
-                    className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-slate-800 dark:text-slate-200 shadow-sm resize-none"
+                    className="w-full px-4 py-3 bg-surface border border-default rounded-lg focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)] focus:outline-none transition-all font-mono text-sm text-primary shadow-sm resize-none"
                     rows={4}
                     required
                     minLength={10}
