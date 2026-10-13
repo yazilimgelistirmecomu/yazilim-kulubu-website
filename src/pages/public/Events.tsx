@@ -38,7 +38,7 @@ function TicketCard({ event }: { event: any }) {
           </div>
           <div className="flex-1">
             <h3 className="text-2xl font-bold mb-2 group-hover:text-[var(--brand-primary)] transition-colors">{event.title}</h3>
-            <p className="text-sm text-muted font-medium mb-4 line-clamp-2">{event.description}</p>
+            <p className="text-sm text-muted font-medium mb-4 line-clamp-2 whitespace-pre-line">{event.description}</p>
             <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-muted">
               <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {time}</span>
               <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {event.location || 'Belirtilmemiş'}</span>
@@ -252,7 +252,7 @@ export function Events() {
                   </span>
                 </div>
                 <h2 className="text-3xl sm:text-5xl md:text-6xl font-black mb-4 sm:mb-6 tracking-tight">{featuredEvent.title}</h2>
-                <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6 sm:mb-8">
+                <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6 sm:mb-8 whitespace-pre-line">
                   {featuredEvent.description}
                 </p>
 

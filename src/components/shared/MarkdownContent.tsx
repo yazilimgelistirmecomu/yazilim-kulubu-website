@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import rehypeSanitize from 'rehype-sanitize';
 
 // Ham HTML işlenmez (rehype-raw yok) ve çıktı ayrıca rehype-sanitize
@@ -8,7 +9,7 @@ export function MarkdownContent({ children }: { children: string }) {
   return (
     <div className="md-content">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeSanitize]}
         components={{
           a: ({ node, ...props }) => (

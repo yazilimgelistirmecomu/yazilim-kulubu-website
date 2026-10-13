@@ -74,7 +74,7 @@ export function ProjectDetail() {
 
         <header className="mb-10 max-w-3xl">
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-4">{project.title}</h1>
-          <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6">
+          <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6 whitespace-pre-line">
             {project.summary || project.description}
           </p>
 
