@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router';
 import { Button } from '@/components/shared/Button';
+import { Logo } from '@/components/shared/Logo';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -47,9 +48,7 @@ export function Navbar() {
         <div className="max-w-[1280px] mx-auto px-6 lg:px-8 h-full flex items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm flex-shrink-0">
-              <img src="/logo.png" alt="YGK Logo" className="w-full h-full object-cover scale-110" />
-            </div>
+            <Logo size={48} className="w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-105 flex-shrink-0" />
             <span className="text-base md:text-xl font-bold text-primary tracking-tight">Yazılım Geliştirme Kulübü</span>
           </Link>
 
@@ -107,7 +106,7 @@ export function Navbar() {
         {/* Drawer Header */}
         <div className="flex items-center justify-between px-6 pt-8 pb-6 border-b border-default">
           <Link to="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-            <img src="/logo.png" alt="YGK Logo" className="w-9 h-9 rounded-full object-cover" />
+            <Logo size={36} className="w-9 h-9" />
             <span className="font-bold text-primary text-sm leading-tight">Yazılım Geliştirme<br />Kulübü</span>
           </Link>
           <button
