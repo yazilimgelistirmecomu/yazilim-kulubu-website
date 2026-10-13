@@ -15,6 +15,7 @@ export type PublicTeamMember = {
   linkedin_url: string | null;
   instagram_url: string | null;
   github_url: string | null;
+  email: string | null;
   hierarchy_level: HierarchyLevel;
   branch_slug: string | null;
   branch_name: string | null;

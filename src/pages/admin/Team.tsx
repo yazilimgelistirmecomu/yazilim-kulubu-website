@@ -36,6 +36,7 @@ export function Team() {
     linkedin_url: '',
     github_url: '',
     instagram_url: '',
+    email: '',
     is_public: true,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -120,6 +121,7 @@ export function Team() {
       linkedin_url: member.linkedin_url || '',
       github_url: member.github_url || '',
       instagram_url: member.instagram_url || '',
+      email: member.email || '',
       is_public: member.is_public !== false,
     });
     setImageFile(null);
@@ -139,6 +141,7 @@ export function Team() {
       linkedin_url: '',
       github_url: '',
       instagram_url: '',
+      email: '',
       is_public: true,
     });
     setImageFile(null);
@@ -171,6 +174,7 @@ export function Team() {
         linkedin_url: formData.linkedin_url,
         github_url: formData.github_url,
         instagram_url: formData.instagram_url,
+        email: formData.email.trim() || null,
         avatar_url: avatarUrl,
         is_public: formData.is_public,
       };
@@ -440,6 +444,11 @@ export function Team() {
             <div className="space-y-1">
               <label className="text-sm font-bold text-primary">GitHub</label>
               <input type="url" value={formData.github_url} onChange={e => setFormData({...formData, github_url: e.target.value})} placeholder="https://github.com/..." className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]" />
+            </div>
+            <div className="space-y-1 sm:col-span-3">
+              <label className="text-sm font-bold text-primary">E-posta</label>
+              <input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="ornek@gmail.com" maxLength={254} className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm focus:outline-none focus:border-[var(--brand-primary)]" />
+              <p className="text-xs text-muted font-medium">Doldurulursa Ekibimiz sayfasında herkese açık görünür.</p>
             </div>
           </div>
 

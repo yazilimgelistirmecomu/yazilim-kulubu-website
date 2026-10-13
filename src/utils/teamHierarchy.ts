@@ -82,5 +82,6 @@ export function memberToPerson(m: PublicTeamMember): PersonModalData {
     linkedin_url: m.linkedin_url,
     github_url: m.github_url,
     instagram_url: m.instagram_url,
+    email: m.email,
   };
 }
