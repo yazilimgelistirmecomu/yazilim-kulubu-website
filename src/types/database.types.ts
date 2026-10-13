@@ -97,6 +97,7 @@ export interface Database {
           created_at: string | null
           display_order: number
           department: string | null
+          email: string | null
           first_name: string | null
           github_url: string | null
           hierarchy_level: 'president' | 'vice_president' | 'branch_lead' | 'member'
@@ -114,6 +115,7 @@ export interface Database {
           created_at?: string | null
           display_order?: number
           department?: string | null
+          email?: string | null
           first_name?: string | null
           github_url?: string | null
           hierarchy_level?: 'president' | 'vice_president' | 'branch_lead' | 'member'
@@ -131,6 +133,7 @@ export interface Database {
           created_at?: string | null
           display_order?: number
           department?: string | null
+          email?: string | null
           first_name?: string | null
           github_url?: string | null
           hierarchy_level?: 'president' | 'vice_president' | 'branch_lead' | 'member'
