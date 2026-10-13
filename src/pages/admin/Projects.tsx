@@ -1,9 +1,10 @@
-import { Plus, Search, Edit2, Trash2, ExternalLink, Github, UploadCloud, AlertTriangle, Loader2, ArrowUp, ArrowDown, X } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, ExternalLink, Github, AlertTriangle, Loader2, ArrowUp, ArrowDown, X } from "lucide-react";
 import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
 import { useState, useEffect } from "react";
 import { projectService } from "@/api/services/projects";
-import { IMAGE_INPUT_ACCEPT, storageService } from "@/api/services/storage";
+import { storageService } from "@/api/services/storage";
+import { ImageField } from "@/components/shared/ImageField";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/api/config";
 import { developerService, type Developer, type Assignment } from "@/api/services/developers";
@@ -43,6 +44,7 @@ export function Projects() {
   // Düzenlemede mevcut atamalar yüklenmeden kaydedilirse ekip silinmesin diye
   const [assignmentsReady, setAssignmentsReady] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -108,6 +110,7 @@ export function Projects() {
       is_featured_club_project: !!project.is_featured_club_project
     });
     setImageFile(null);
+    setRemoveImage(false);
     setIsModalOpen(true);
   };
 
@@ -133,6 +136,7 @@ export function Projects() {
       is_featured_club_project: false
     });
     setImageFile(null);
+    setRemoveImage(false);
     setIsModalOpen(true);
   };
 
@@ -162,7 +166,8 @@ export function Projects() {
     setIsSubmitting(true);
 
     try {
-      let imageUrl = selectedProject?.image_url || null;
+      const oldImageUrl: string | null = selectedProject?.image_url || null;
+      let imageUrl = removeImage ? null : oldImageUrl;
 
       if (imageFile) {
         imageUrl = await storageService.uploadImage('project-images', imageFile);
@@ -213,6 +218,11 @@ export function Projects() {
         assignments: assignmentsReady ? assignments : null,
         featured,
       });
+
+      // Kayıt başarılı olduktan sonra eski dosya silinir; hata kaydı engellemez
+      if (oldImageUrl && oldImageUrl !== imageUrl) {
+        await storageService.deleteImagesByUrl([oldImageUrl]);
+      }
 
       await fetchProjects();
       setIsModalOpen(false);
@@ -485,38 +495,14 @@ export function Projects() {
             </span>
           </label>
 
-          <div className="space-y-1">
-            <label className="text-sm font-bold text-primary">Kapak Görseli</label>
-            {imageFile || selectedProject?.image_url ? (
-              <div className="w-full relative h-40 border-2 border-default rounded-xl overflow-hidden bg-surface group">
-                <img 
-                  src={imageFile ? URL.createObjectURL(imageFile) : selectedProject?.image_url} 
-                  alt="Kapak" 
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-50 transition-opacity" 
-                />
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setImageFile(null);
-                    if(selectedProject) selectedProject.image_url = null;
-                  }}
-                  className="absolute top-2 right-2 p-2 bg-[var(--color-danger-solid)] hover:bg-[var(--color-danger-hover)] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Görseli Kaldır"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="w-full border-2 border-dashed border-default rounded-xl bg-page hover:bg-surface transition-colors">
-                <label className="flex flex-col items-center justify-center p-6 cursor-pointer w-full gap-2">
-                  <UploadCloud className="w-8 h-8 text-[var(--brand-primary)] opacity-80" />
-                  <span className="text-sm font-bold text-primary">Görsel Seç</span>
-                  <span className="text-xs font-medium text-muted">PNG, JPG, WEBP veya HEIC/HEIF (Max 5MB)</span>
-                  <input type="file" accept={IMAGE_INPUT_ACCEPT} className="hidden" onChange={e => setImageFile(e.target.files?.[0] || null)} />
-                </label>
-              </div>
-            )}
-          </div>
+          <ImageField
+            label="Kapak Görseli"
+            currentUrl={selectedProject?.image_url}
+            file={imageFile}
+            removed={removeImage}
+            onFileChange={e => { setImageFile(e.target.files?.[0] || null); setRemoveImage(false); }}
+            onRemove={() => { setImageFile(null); setRemoveImage(true); }}
+          />
 
           <div className="space-y-1">
             <label className="text-sm font-bold text-primary">Açıklama</label>
@@ -544,6 +530,7 @@ export function Projects() {
               <textarea rows={10} maxLength={50000} value={formData.content_md} onChange={e => setFormData({...formData, content_md: e.target.value})} placeholder={"## Başlık\n\n- Liste öğesi\n\n```ts\nconst kod = 1;\n```"} className="w-full px-4 py-2.5 bg-surface border border-default rounded-xl text-sm font-mono focus:outline-none focus:border-[var(--brand-primary)]"></textarea>
             )}
             <p className="text-xs text-muted">Başlık, liste, kod bloğu, tablo ve linkler desteklenir. HTML çalıştırılmaz.</p>
+            <p className="text-xs text-muted">Başlık için ##, liste için -, kalın yazı için **metin**</p>
           </div>
 
           <div className="space-y-2">

@@ -3,7 +3,8 @@ import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
 import { useState, useEffect } from "react";
 import { supabase } from "@/api/config";
-import { IMAGE_INPUT_ACCEPT, storageService } from "@/api/services/storage";
+import { storageService } from "@/api/services/storage";
+import { ImageField } from "@/components/shared/ImageField";
 import { branchService, HIERARCHY_LEVELS, type HierarchyLevel, type TeamBranch } from "@/api/services/team";
 
 const LEVEL_OPTIONS: Record<HierarchyLevel, string> = {
@@ -38,6 +39,7 @@ export function Team() {
     is_public: true,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [removeAvatar, setRemoveAvatar] = useState(false);
   const [branches, setBranches] = useState<TeamBranch[]>([]);
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
 
@@ -121,6 +123,7 @@ export function Team() {
       is_public: member.is_public !== false,
     });
     setImageFile(null);
+    setRemoveAvatar(false);
     setIsModalOpen(true);
   };
 
@@ -139,6 +142,7 @@ export function Team() {
       is_public: true,
     });
     setImageFile(null);
+    setRemoveAvatar(false);
     setIsModalOpen(true);
   };
 
@@ -147,7 +151,8 @@ export function Team() {
     setIsSubmitting(true);
 
     try {
-      let avatarUrl = selectedMember?.avatar_url || null;
+      const oldAvatarUrl: string | null = selectedMember?.avatar_url || null;
+      let avatarUrl = removeAvatar ? null : oldAvatarUrl;
 
       if (imageFile) {
         avatarUrl = await storageService.uploadImage('project-images', imageFile); // Profil fotoları için aynı bucket'ı kullanabiliriz
@@ -176,6 +181,10 @@ export function Team() {
       } else {
         const { error } = await supabase.from('profiles').insert([{ ...payload, id: crypto.randomUUID() }]);
         if (error) throw error;
+      }
+
+      if (oldAvatarUrl && oldAvatarUrl !== avatarUrl) {
+        await storageService.deleteImagesByUrl([oldAvatarUrl]);
       }
 
       await fetchMembers();
@@ -409,23 +418,15 @@ export function Team() {
             )}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm font-bold text-primary">Profil Fotoğrafı</label>
-            <div className="w-full border-2 border-dashed border-default rounded-xl bg-page hover:bg-surface transition-colors">
-              <label className="flex flex-col items-center justify-center p-6 cursor-pointer w-full gap-2">
-                {imageFile || selectedMember?.avatar_url ? (
-                  <img src={imageFile ? URL.createObjectURL(imageFile) : selectedMember?.avatar_url} alt="Mevcut fotoğraf" className="w-16 h-16 rounded-full object-cover mb-1 border-2 border-[var(--brand-primary)]/30" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center border-2 border-dashed border-default mb-1">
-                    <UploadCloud className="w-7 h-7 text-muted" />
-                  </div>
-                )}
-                <span className="text-sm font-bold text-primary">Fotoğraf Seç veya Değiştir</span>
-                <span className="text-xs font-medium text-muted">PNG, JPG, WEBP veya HEIC/HEIF (Max 5MB)</span>
-                <input type="file" accept={IMAGE_INPUT_ACCEPT} className="hidden" onChange={e => setImageFile(e.target.files?.[0] || null)} />
-              </label>
-            </div>
-          </div>
+          <ImageField
+            variant="avatar"
+            label="Profil Fotoğrafı"
+            currentUrl={selectedMember?.avatar_url}
+            file={imageFile}
+            removed={removeAvatar}
+            onFileChange={e => { setImageFile(e.target.files?.[0] || null); setRemoveAvatar(false); }}
+            onRemove={() => { setImageFile(null); setRemoveAvatar(true); }}
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1">

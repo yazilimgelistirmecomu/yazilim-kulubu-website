@@ -155,6 +155,35 @@ export const storageService = {
     return publicUrl;
   },
 
+  // Public URL -> { bucket, path }. Uygulamanın kendi bucket'ı değilse null.
+  parsePublicUrl(url: string | null | undefined): { bucket: AppImageBucket; path: string } | null {
+    if (!url) return null;
+    const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/([^?#]+)/);
+    if (!match) return null;
+    const bucket = match[1] as AppImageBucket;
+    if (!APP_IMAGE_BUCKETS.has(bucket)) return null;
+    try {
+      return { bucket, path: decodeURIComponent(match[2]) };
+    } catch {
+      return null;
+    }
+  },
+
+  // Kayıt başarıyla kaydedildikten sonra çağrılır; hata kaydı engellemez, sadece loglanır.
+  async deleteImagesByUrl(urls: Array<string | null | undefined>) {
+    const targets = urls
+      .map(url => this.parsePublicUrl(url))
+      .filter((t): t is { bucket: AppImageBucket; path: string } => t !== null);
+
+    await Promise.all(targets.map(async ({ bucket, path }) => {
+      try {
+        await this.deleteImage(bucket, path);
+      } catch (error) {
+        console.error('Storage dosyası silinemedi:', bucket, path, error);
+      }
+    }));
+  },
+
   async deleteImage(bucket: AppImageBucket, path: string) {
     if (!APP_IMAGE_BUCKETS.has(bucket)) throw new Error('Geçersiz görsel deposu.');
     if (!path || path.startsWith('/') || path.includes('..')) throw new Error('Geçersiz dosya yolu.');
