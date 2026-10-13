@@ -4,7 +4,8 @@ import { Button } from '@/components/shared/Button';
 import { Modal } from '@/components/shared/Modal';
 import { DeveloperAvatar } from '@/components/shared/DeveloperModal';
 import { developerService, type Developer } from "@/api/services/developers";
-import { IMAGE_INPUT_ACCEPT, storageService } from "@/api/services/storage";
+import { storageService } from "@/api/services/storage";
+import { ImageField } from "@/components/shared/ImageField";
 
 type DeveloperRow = Developer & {
   project_developers?: { project_id: string; projects: { title: string } | null }[];
@@ -48,9 +49,6 @@ export function Developers() {
     fetchDevelopers();
   }, []);
 
-  const previewUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : null), [imageFile]);
-  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
-
   const handleAdd = () => {
     setSelected(null);
     setFormData(emptyForm);
@@ -78,7 +76,8 @@ export function Developers() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      let avatarUrl = removeAvatar ? null : selected?.avatar_url ?? null;
+      const oldAvatarUrl = selected?.avatar_url ?? null;
+      let avatarUrl = removeAvatar ? null : oldAvatarUrl;
       if (imageFile) {
         avatarUrl = await storageService.uploadImage('project-images', imageFile, 'developers');
       }
@@ -88,6 +87,9 @@ export function Developers() {
         await developerService.updateDeveloper(selected.id, payload);
       } else {
         await developerService.createDeveloper(payload);
+      }
+      if (oldAvatarUrl && oldAvatarUrl !== avatarUrl) {
+        await storageService.deleteImagesByUrl([oldAvatarUrl]);
       }
       await fetchDevelopers();
       setIsModalOpen(false);
@@ -116,7 +118,6 @@ export function Developers() {
     d.full_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const shownAvatar = previewUrl || (removeAvatar ? null : selected?.avatar_url) || null;
   const deleteProjects = confirmDelete?.project_developers?.map(pd => pd.projects?.title).filter(Boolean) ?? [];
 
   return (
@@ -211,22 +212,15 @@ export function Developers() {
             <input type="text" required maxLength={120} value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} placeholder="Örn: Ayşe Yılmaz" className={inputClass} />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm font-bold text-primary">Fotoğraf (opsiyonel)</label>
-            {shownAvatar ? (
-              <div className="flex items-center gap-4">
-                <img src={shownAvatar} alt="Fotoğraf" className="w-16 h-16 rounded-full object-cover border border-default" />
-                <button type="button" onClick={() => { setImageFile(null); setRemoveAvatar(true); }} className="text-sm font-bold text-[var(--color-danger)] cursor-pointer">Fotoğrafı kaldır</button>
-              </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center p-5 cursor-pointer w-full gap-2 border-2 border-dashed border-default rounded-xl hover:bg-surface transition-colors">
-                <UploadCloud className="w-7 h-7 text-[var(--brand-primary)] opacity-80" />
-                <span className="text-sm font-bold text-primary">Fotoğraf Seç</span>
-                <span className="text-xs font-medium text-muted">PNG, JPG, WEBP veya HEIC/HEIF (Max 5MB)</span>
-                <input type="file" accept={IMAGE_INPUT_ACCEPT} className="hidden" onChange={e => { setImageFile(e.target.files?.[0] || null); setRemoveAvatar(false); }} />
-              </label>
-            )}
-          </div>
+          <ImageField
+            variant="avatar"
+            label="Fotoğraf (opsiyonel)"
+            currentUrl={selected?.avatar_url}
+            file={imageFile}
+            removed={removeAvatar}
+            onFileChange={e => { setImageFile(e.target.files?.[0] || null); setRemoveAvatar(false); }}
+            onRemove={() => { setImageFile(null); setRemoveAvatar(true); }}
+          />
 
           <p className="text-xs text-muted font-medium bg-surface border border-default rounded-xl p-3">
             Aşağıdaki iletişim bilgileri proje sayfasında herkese açık gösterilir. Boş bıraktığınız alanlar gösterilmez.

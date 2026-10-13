@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { Linkedin, Instagram, Youtube } from 'lucide-react';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { Logo } from '@/components/shared/Logo';
 
 export function Footer() {
   const settings = useSiteSettings();
@@ -13,9 +14,7 @@ export function Footer() {
           {/* Brand & Info */}
           <div className="flex flex-col gap-4">
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
-                <img src="/logo.png" alt="YGK Logo" className="w-full h-full object-cover scale-110" />
-              </div>
+              <Logo size={40} className="w-10 h-10 group-hover:scale-105 transition-transform" />
               <span className="text-lg font-bold text-primary tracking-tight">Yazılım Geliştirme Kulübü</span>
             </Link>
             <div className="text-sm font-medium text-muted">

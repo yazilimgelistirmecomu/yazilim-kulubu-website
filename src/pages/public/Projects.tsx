@@ -152,7 +152,7 @@ ${formData.description}
                   </span>
                 </div>
                 <h2 className="text-3xl sm:text-5xl md:text-6xl font-black mb-4 sm:mb-6 tracking-tight">{featuredProject.title}</h2>
-                <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6 sm:mb-8">
+                <p className="text-base sm:text-xl text-muted leading-relaxed font-medium mb-6 sm:mb-8 whitespace-pre-line">
                   {featuredProject.summary || featuredProject.description}
                 </p>
 
@@ -273,7 +273,7 @@ ${formData.description}
                     </div>
 
                     <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 tracking-tight leading-tight">{project.title}</h3>
-                    <p className="text-sm sm:text-base text-muted mb-6 leading-relaxed font-medium line-clamp-3">
+                    <p className="text-sm sm:text-base text-muted mb-6 leading-relaxed font-medium line-clamp-3 whitespace-pre-line">
                       {project.summary || project.description}
                     </p>
 
@@ -389,7 +389,7 @@ ${formData.description}
                   </div>
 
                   <h3 className="text-2xl font-bold mb-3 text-primary group-hover:text-[var(--brand-primary)] transition-colors line-clamp-1">{project.title}</h3>
-                  <p className="text-sm font-medium text-muted mb-5 line-clamp-2 leading-relaxed">{project.summary || project.description}</p>
+                  <p className="text-sm font-medium text-muted mb-5 line-clamp-2 leading-relaxed whitespace-pre-line">{project.summary || project.description}</p>
 
                   <div className="mt-auto">
                     <div className="flex flex-wrap gap-2 mb-4">

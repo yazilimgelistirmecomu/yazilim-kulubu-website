@@ -5,6 +5,7 @@ import { Modal } from '@/components/shared/Modal';
 import { useState, useEffect } from "react";
 import { eventService } from "@/api/services/events";
 import { IMAGE_INPUT_ACCEPT, storageService } from "@/api/services/storage";
+import { ImageField } from "@/components/shared/ImageField";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/api/config";
 import { SmartImage } from "@/components/shared/SmartImage";
@@ -64,6 +65,7 @@ export function Events() {
   const handleCropComplete = (croppedFile: File) => {
     if (cropperTargetType === 'cover') {
       setImageFile(croppedFile);
+      setRemoveImage(false);
     } else {
       setGalleryFiles(prev => [...prev, croppedFile]);
     }
@@ -83,6 +85,7 @@ export function Events() {
   });
   const [slugTouched, setSlugTouched] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingGalleryUrls, setExistingGalleryUrls] = useState<string[]>([]);
 
@@ -153,6 +156,7 @@ export function Events() {
     });
     setSlugTouched(false);
     setImageFile(null);
+    setRemoveImage(false);
     setGalleryFiles([]);
     setExistingGalleryUrls(event.gallery_urls || []);
     setIsModalOpen(true);
@@ -173,6 +177,7 @@ export function Events() {
     });
     setSlugTouched(false);
     setImageFile(null);
+    setRemoveImage(false);
     setGalleryFiles([]);
     setExistingGalleryUrls([]);
     setIsModalOpen(true);
@@ -190,7 +195,9 @@ export function Events() {
     setIsSubmitting(true);
 
     try {
-      let imageUrl = selectedEvent?.image_url || null;
+      const oldImageUrl: string | null = selectedEvent?.image_url || null;
+      const oldGalleryUrls: string[] = selectedEvent?.gallery_urls || [];
+      let imageUrl = removeImage ? null : oldImageUrl;
 
       if (imageFile) {
         imageUrl = await storageService.uploadImage('event-covers', imageFile);
@@ -231,6 +238,14 @@ export function Events() {
         await eventService.updateEvent(selectedEvent.id, eventPayload);
       } else {
         await eventService.createEvent(eventPayload);
+      }
+
+      // Kayıt başarılı olduktan sonra DB'de artık referans verilmeyen dosyalar silinir;
+      // silme hatası kaydı engellemez (deleteImagesByUrl sadece loglar)
+      const keptUrls = new Set<string>([imageUrl, ...eventPayload.gallery_urls].filter((u): u is string => !!u));
+      const orphaned = [oldImageUrl, ...oldGalleryUrls].filter((u): u is string => !!u && !keptUrls.has(u));
+      if (orphaned.length > 0) {
+        await storageService.deleteImagesByUrl(orphaned);
       }
 
       await fetchEvents();
@@ -453,38 +468,14 @@ export function Events() {
             </div>
           )}
 
-          <div className="space-y-1">
-            <label className="text-sm font-bold text-primary">Kapak Görseli</label>
-            {imageFile || selectedEvent?.image_url ? (
-              <div className="w-full relative h-40 border-2 border-default rounded-xl overflow-hidden bg-surface group">
-                <SmartImage
-                  src={imageFile ? URL.createObjectURL(imageFile) : selectedEvent?.image_url}
-                  alt="Kapak"
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-50 transition-opacity"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImageFile(null);
-                    if (selectedEvent) selectedEvent.image_url = null;
-                  }}
-                  className="absolute top-2 right-2 p-2 bg-[var(--color-danger-solid)] hover:bg-[var(--color-danger-hover)] text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Görseli Kaldır"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="w-full border-2 border-dashed border-default rounded-xl bg-page hover:bg-surface transition-colors">
-                <label className="flex flex-col items-center justify-center p-6 cursor-pointer w-full gap-2">
-                  <UploadCloud className="w-8 h-8 text-[var(--brand-primary)] opacity-80" />
-                  <span className="text-sm font-bold text-primary">Görsel Seç</span>
-                  <span className="text-xs font-medium text-muted">PNG, JPG, WEBP veya HEIC/HEIF (Max 5MB)</span>
-                  <input type="file" accept={IMAGE_INPUT_ACCEPT} className="hidden" onChange={handleCoverSelect} />
-                </label>
-              </div>
-            )}
-          </div>
+          <ImageField
+            label="Kapak Görseli"
+            currentUrl={selectedEvent?.image_url}
+            file={imageFile}
+            removed={removeImage}
+            onFileChange={handleCoverSelect}
+            onRemove={() => { setImageFile(null); setRemoveImage(true); }}
+          />
 
           <div className="space-y-1">
             <label className="text-sm font-bold text-primary">Detaylı Açıklama</label>

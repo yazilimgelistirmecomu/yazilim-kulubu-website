@@ -261,7 +261,7 @@ export function Home() {
                   )}
                 </div>
                 {featuredEvent.description && (
-                  <p className="text-base text-muted leading-relaxed font-medium line-clamp-3 mb-6">{featuredEvent.description}</p>
+                  <p className="text-base text-muted leading-relaxed font-medium line-clamp-3 mb-6 whitespace-pre-line">{featuredEvent.description}</p>
                 )}
                 <span className="inline-flex items-center gap-2 text-sm font-bold text-[var(--brand-primary)] mt-auto">
                   Detayları İncele <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
