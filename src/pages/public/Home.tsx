@@ -191,7 +191,7 @@ export function Home() {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="flex flex-col sm:flex-row items-center gap-3.5 sm:gap-4 mb-8 sm:mb-14 w-full sm:w-auto max-w-[340px] sm:max-w-none"
           >
-            <Button href="https://docs.google.com/forms/d/e/1FAIpQLSfuwWAWqtpjasdHr9SyZfBZt1LrPGmc2y80bfLXY1H-f7Hsrg/viewform?usp=dialog" target="_blank" rel="noopener noreferrer" variant="primary" size="lg" className="rounded-dynamic shadow-dynamic px-8 sm:px-10 h-12 sm:h-14 text-base sm:text-lg w-full sm:w-auto font-bold">
+            <Button href="https://forms.gle/8G6Z9tGjQJtAmNHj9" target="_blank" rel="noopener noreferrer" variant="primary" size="lg" className="rounded-dynamic shadow-dynamic px-8 sm:px-10 h-12 sm:h-14 text-base sm:text-lg w-full sm:w-auto font-bold">
               Bize Katıl
             </Button>
             <Button asLink href="/iletisim" variant="secondary" size="lg" className="rounded-dynamic px-8 sm:px-10 h-12 sm:h-14 text-base sm:text-lg border-default w-full sm:w-auto font-bold bg-surface hover:bg-elevated transition-colors">
